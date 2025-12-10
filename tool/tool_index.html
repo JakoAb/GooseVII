@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gioco</title>
-    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="tool_index.css">
 </head>
 <body>
     <div id="main-content">
-        <img id="map-background" src="assets/back_celle.png" alt="Sfondo celle" style="z-index:0;" />
-        <img id="map" src="assets/map.png" alt="Mappa" style="z-index:1;" />
+        <img id="map-background" src="../assets/back_celle.png" alt="Sfondo celle" style="z-index:0;" />
+        <img id="map" src="../assets/map.png" alt="Mappa" style="z-index:1;" />
         <div class="blur-overlay">
             <div class="blur-top"></div>
             <div class="blur-bottom"></div>
@@ -18,14 +18,11 @@
         </div>
     </div>
     <div id="debug-bar">
-        <button id="toggle-blur" title="Blur">Toggle Blur</button>
         <p class="label-debug">celle</p>
         <button id="toggle-pointer" title="Puntamento">Aggiungi</button>
         <button id="import-points" title="Importa punti">Importa</button>
         <button id="export-points" title="Esporta punti">Esporta</button>
-        <button id="clear-points" title="Elimina tutti i punti">Cancella</button>
-        <p class="label-debug">Domande</p>
-        <button id="questions-btn" title="Domande">Modifica</button>
+        <button id="clear-points" title="Elimina tutti i punti">Cancella tutte</button>
         <p class="label-debug">Settaggi</p>
         <button id="export-all-btn" title="Domande">Esporta tutto</button>
     </div>
@@ -50,7 +47,15 @@
         </div>
     </div>
 
-    <script type="text/javascript" src="main.js"></script>
-    <script type="text/javascript" src="database/celle.js"></script>
+    <div id="cell-questions-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:10002; justify-content:center; align-items:center;">
+        <div style="background:#fff; padding:24px; border-radius:8px; min-width:300px; position:relative; max-width:600px; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column;">
+            <h3 id="cell-questions-title">Domande cella</h3>
+            <div id="cell-questions-cards-container" style="display:flex; flex-direction:column; gap:16px; margin-bottom:16px;"></div>
+            <button id="close-cell-questions-modal" style="align-self:center;">Salva e Chiudi</button>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="tool_index.js"></script>
+    <script type="text/javascript" src="preload/celle.js"></script>
 </body>
 </html>

@@ -11,9 +11,7 @@ let lastY = 0;
 let isZoomActive = false;
 let isPointerMode = false;
 const pointerBtn = document.getElementById('toggle-pointer');
-const blurBtn = document.getElementById('toggle-blur');
 const clearPointsBtn = document.getElementById('clear-points');
-const questionsBtn = document.getElementById('questions-btn');
 const exportBtn = document.getElementById('export-points');
 const importBtn = document.getElementById('import-points');
 const mainContent = document.getElementById('main-content');
@@ -106,11 +104,6 @@ function blurMain(isBlur) {
     }
 }
 
-blurBtn.addEventListener('click', () => {
-    blurBtn.classList.toggle('active');
-    blurMain(blurBtn.classList.contains('active'));
-});
-
 function addDebugDot(mainContent, debugDots, x, y, cella) {
     const dot = document.createElement('div');
     dot.className = 'debug-dot';
@@ -174,8 +167,9 @@ clearPointsBtn.addEventListener('click', function() {
 
 mainContent.addEventListener('click', function(e) {
     if (e.target.classList.contains('debug-dot')) {
-        // Stampa in console il numero della cella
-        console.log('Cella:', e.target.dataset.cella);
+        // Apri la modale domande della cella
+        const cella = e.target.dataset.cella;
+        openCellQuestionsModal(parseInt(cella));
         return;
     }
     if (!isPointerMode || e.button !== 0) return;
@@ -240,73 +234,6 @@ loadJsonPointsBtn.addEventListener('click', function() {
         importErrorDiv.style.display = 'block';
     };
     reader.readAsText(file);
-});
-
-questionsBtn.addEventListener('click', function() {
-    // Sincronizza questionsData con i punti
-    if (questionsData.length !== debugDots.length) {
-        questionsData = debugDots.map((dot, i) => {
-            return questionsData[i] || {
-                cella: dot.cella,
-                domanda: '',
-                rispostaCorretta: '',
-                risposta1: '',
-                risposta2: '',
-                collapsed: false // tutte aperte all'apertura
-            };
-        });
-    } else {
-        // Se già esiste, apri tutte le card
-        questionsData.forEach(q => q.collapsed = false);
-    }
-    const container = document.getElementById('questions-cards-container');
-    container.innerHTML = '';
-    questionsData.forEach((q, idx) => {
-        const card = document.createElement('div');
-        card.className = 'question-card';
-        card.style = 'border:1px solid #ccc; border-radius:8px; padding:12px; background:#fafafa; position:relative;';
-        if (q.collapsed) {
-            card.innerHTML = `<div style='display:flex; align-items:center; justify-content:space-between;'>
-                <span><b>${q.cella}</b> | ${q.domanda}</span>
-                <button type='button' data-idx='${idx}' class='open-card-btn'>Apri</button>
-            </div>`;
-        } else {
-            card.innerHTML = `
-                <button type='button' data-idx='${idx}' class='close-card-btn' style='position:absolute; top:8px; right:8px;'>Chiudi</button>
-                <div style=\"margin-bottom:8px;\"><label>Numero cella: <input type=\"text\" value=\"${q.cella}\" readonly style=\"background:#eee; width:60px;\" /></label></div>
-                <div style=\"margin-bottom:8px;\"><label>Dom: <input type=\"text\" value=\"${q.domanda}\" data-field=\"domanda\" data-idx=\"${idx}\" /></label></div>
-                <div style=\"margin-bottom:8px;\"><label>Risp: <input type=\"text\" value=\"${q.rispostaCorretta}\" data-field=\"rispostaCorretta\" data-idx=\"${idx}\" class=\"input-risp\" /></label></div>
-                <div style=\"margin-bottom:8px;\"><label>Err1: <input type=\"text\" value=\"${q.risposta1}\" data-field=\"risposta1\" data-idx=\"${idx}\" class=\"input-err\" /></label></div>
-                <div style=\"margin-bottom:8px;\"><label>Err2: <input type=\"text\" value=\"${q.risposta2}\" data-field=\"risposta2\" data-idx=\"${idx}\" class=\"input-err\" /></label></div>
-            `;
-        }
-        container.appendChild(card);
-    });
-    // Listener per aggiornare questionsData
-    container.querySelectorAll('input[type="text"]').forEach(input => {
-        if (input.hasAttribute('readonly')) return;
-        input.addEventListener('input', function(e) {
-            const idx = parseInt(e.target.getAttribute('data-idx'));
-            const field = e.target.getAttribute('data-field');
-            questionsData[idx][field] = e.target.value;
-        });
-    });
-    // Listener per chiudere/aprire card
-    container.querySelectorAll('.close-card-btn').forEach(btn => {
-        btn.onclick = function(e) {
-            const idx = parseInt(e.target.getAttribute('data-idx'));
-            questionsData[idx].collapsed = true;
-            questionsBtn.click();
-        };
-    });
-    container.querySelectorAll('.open-card-btn').forEach(btn => {
-        btn.onclick = function(e) {
-            const idx = parseInt(e.target.getAttribute('data-idx'));
-            questionsData[idx].collapsed = false;
-            questionsBtn.click();
-        };
-    });
-    questionsModal.style.display = 'flex';
 });
 closeQuestionsModalBtn.addEventListener('click', function() {
     questionsModal.style.display = 'none';
@@ -380,4 +307,94 @@ function importPreloadedCells(cells) {
         if (typeof p.x !== 'number' || typeof p.y !== 'number') throw new Error('Ogni punto deve avere x e y numerici.');
         addDebugDot(mainContent, debugDots, p.x, p.y, p.cella ?? (i+1));
     });
+}
+
+function openCellQuestionsModal(cella) {
+    // Trova o crea le domande associate a questa cella
+    let idx = debugDots.findIndex(d => d.cella == cella);
+    if (idx === -1) return;
+    // Render modale
+    const modal = document.getElementById('cell-questions-modal');
+    const title = document.getElementById('cell-questions-title');
+    const container = document.getElementById('cell-questions-cards-container');
+    title.textContent = 'Domande cella ' + cella;
+    container.innerHTML = '';
+    // Se non esiste la struttura domande, la inizializzo
+    if(questionsData[idx] != undefined){
+        if (!questionsData[idx].domande) {
+                questionsData[idx].domande = [
+                    {
+                        domanda: questionsData[idx].domanda || '',
+                        rispostaCorretta: questionsData[idx].rispostaCorretta || '',
+                        risposta1: questionsData[idx].risposta1 || '',
+                        risposta2: questionsData[idx].risposta2 || ''
+                    }
+                ];
+            }
+            // Renderizza tutte le domande per la cella
+            questionsData[idx].domande.forEach((q, qIdx) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.style = 'border:1px solid #ccc; border-radius:8px; padding:12px; background:#fafafa; position:relative; margin-bottom:8px;';
+                card.innerHTML = `
+                    <button type='button' data-qidx='${qIdx}' class='close-card-btn' style='position:absolute; top:8px; right:8px;'>X</button>
+                    <div style=\"margin-bottom:8px;\"><label>Domanda: <input type=\"text\" value=\"${q.domanda || ''}\" data-field=\"domanda\" data-qidx=\"${qIdx}\" /></label></div>
+                    <div style=\"margin-bottom:8px;\"><label>R. Corretta: <input type=\"text\" class=\"input-risp\" value=\"${q.rispostaCorretta || ''}\" data-field=\"rispostaCorretta\" data-qidx=\"${qIdx}\" /></label></div>
+                    <div style=\"margin-bottom:8px;\"><label>R. Errata 1: <input type=\"text\" class=\"input-err\" value=\"${q.risposta1 || ''}\" data-field=\"risposta1\" data-qidx=\"${qIdx}\" /></label></div>
+                    <div style=\"margin-bottom:8px;\"><label>R. Errata 2: <input type=\"text\" class=\"input-err\" value=\"${q.risposta2 || ''}\" data-field=\"risposta2\" data-qidx=\"${qIdx}\" /></label></div>
+                `;
+                container.appendChild(card);
+            });
+    }
+    // Listener input
+    container.querySelectorAll('input[type="text"]').forEach(input => {
+        input.addEventListener('input', function(e) {
+            const qIdx = parseInt(e.target.getAttribute('data-qidx'));
+            const field = e.target.getAttribute('data-field');
+            questionsData[idx].domande[qIdx][field] = e.target.value;
+        });
+    });
+    // Listener chiudi card
+    container.querySelectorAll('.close-card-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            const qIdx = parseInt(e.target.getAttribute('data-qidx'));
+            questionsData[idx].domande.splice(qIdx, 1);
+            openCellQuestionsModal(cella);
+        };
+    });
+    // Bottone aggiungi domanda
+    let addBtn = document.getElementById('add-cell-question');
+    if (!addBtn) {
+        addBtn = document.createElement('button');
+        addBtn.id = 'add-cell-question';
+        addBtn.textContent = '+';
+        addBtn.style = 'width:40px; height:40px; font-weight:bolder; font-size:1.2em; align-self:center; margin-bottom:16px;';
+        container.parentNode.insertBefore(addBtn, container.nextSibling);
+    }
+
+    addBtn.onclick = function() {
+        if(questionsData[idx] == undefined){
+            questionsData[idx] = {
+                cella: idx,
+                posizione: { x: debugDots[idx].x, y: debugDots[idx].y },
+                domande:[]
+            };
+        }
+
+        if(questionsData[idx] != undefined){
+        questionsData[idx].domande.push({
+                    domanda: '',
+                    rispostaCorretta: '',
+                    risposta1: '',
+                    risposta2: ''
+                });
+                openCellQuestionsModal(cella);
+        }
+    };
+    // Bottone chiudi
+    const closeBtn = document.getElementById('close-cell-questions-modal');
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+    };
+    modal.style.display = 'flex';
 }
