@@ -147,7 +147,7 @@ body {
     height: 24px;
     background: #ffe600;
     border-radius: 50%;
-    pointer-events: none;
+    pointer-events: auto; /* Permetti il click sui pallini */
     z-index: 9998;
     box-shadow: 0 0 6px #ffe60099;
     display: flex;

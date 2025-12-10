@@ -28,6 +28,7 @@ const loadJsonPointsBtn = document.getElementById('load-json-points');
 const importErrorDiv = document.getElementById('import-error');
 const questionsModal = document.getElementById('questions-modal');
 const closeQuestionsModalBtn = document.getElementById('close-questions-modal');
+const exportAllBtn = document.getElementById('export-all-btn');
 
 function setTransform() {
     map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
@@ -172,6 +173,11 @@ clearPointsBtn.addEventListener('click', function() {
 });
 
 mainContent.addEventListener('click', function(e) {
+    if (e.target.classList.contains('debug-dot')) {
+        // Stampa in console il numero della cella
+        console.log('Cella:', e.target.dataset.cella);
+        return;
+    }
     if (!isPointerMode || e.button !== 0) return;
     const rect = mainContent.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -318,6 +324,42 @@ exportBtn.addEventListener('click', function() {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'celle.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 100);
+});
+
+exportAllBtn.addEventListener('click', function() {
+    // Costruisci la struttura richiesta
+    const database = debugDots.map((d, idx) => {
+        // Trova le domande associate a questa cella
+        const q = questionsData[idx] || {};
+        let domande = [];
+        if (q.domanda && q.rispostaCorretta) {
+            domande.push({
+                domanda: q.domanda,
+                rispostaCorretta: q.rispostaCorretta,
+                altreRisposte: [q.risposta1 || '', q.risposta2 || '', '']
+                    .filter(r => r !== '')
+            });
+        }
+        // Se ci sono più domande, puoi estendere qui
+        return {
+            cella: d.cella,
+            posizione: { x: Math.round(d.x), y: Math.round(d.y) },
+            domande: domande
+        };
+    });
+    // Genera il JS
+    const js = 'let database = ' + JSON.stringify(database, null, 2) + ';';
+    const blob = new Blob([js], {type: 'application/javascript'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'game-settings.js';
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
