@@ -143,11 +143,25 @@ body {
 }
 .debug-dot {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 24px;
+    height: 24px;
     background: #ffe600;
     border-radius: 50%;
     pointer-events: none;
     z-index: 9998;
     box-shadow: 0 0 6px #ffe60099;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #222;
+}
+.input-risp {
+    border: 2px solid #2ecc40 !important;
+    background: #eaffea;
+}
+.input-err {
+    border: 2px solid #ff4136 !important;
+    background: #ffeaea;
 }

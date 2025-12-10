@@ -18,6 +18,7 @@ const exportBtn = document.getElementById('export-points');
 const importBtn = document.getElementById('import-points');
 const mainContent = document.getElementById('main-content');
 let debugDots = [];
+let questionsData = [];
 
 const map = document.getElementById('map');
 const importModal = document.getElementById('import-modal');
@@ -112,11 +113,20 @@ blurBtn.addEventListener('click', () => {
 function addDebugDot(mainContent, debugDots, x, y, cella) {
     const dot = document.createElement('div');
     dot.className = 'debug-dot';
-    dot.style.left = (x - 6) + 'px';
-    dot.style.top = (y - 6) + 'px';
+    dot.style.left = (x - 12) + 'px'; // centrato rispetto a 24px
+    dot.style.top = (y - 12) + 'px';
     dot.dataset.x = x;
     dot.dataset.y = y;
     dot.dataset.cella = cella;
+    dot.style.width = '24px';
+    dot.style.height = '24px';
+    dot.style.display = 'flex';
+    dot.style.alignItems = 'center';
+    dot.style.justifyContent = 'center';
+    dot.style.fontWeight = 'bold';
+    dot.style.fontSize = '1.1em';
+    dot.style.color = '#222';
+    dot.innerText = cella;
     mainContent.appendChild(dot);
     debugDots.push({el: dot, x, y, cella});
 }
@@ -213,7 +223,7 @@ loadJsonPointsBtn.addEventListener('click', function() {
                 addDebugDot(mainContent, debugDots, p.x, p.y, p.cella ?? (i+1));
             });
             importModal.style.display = 'none';
-            alert('Punti importati!');
+            // Messaggio di caricamento rimosso
         } catch (err) {
             importErrorDiv.textContent = 'Errore: ' + err.message;
             importErrorDiv.style.display = 'block';
@@ -227,8 +237,91 @@ loadJsonPointsBtn.addEventListener('click', function() {
 });
 
 questionsBtn.addEventListener('click', function() {
+    // Sincronizza questionsData con i punti
+    if (questionsData.length !== debugDots.length) {
+        questionsData = debugDots.map((dot, i) => {
+            return questionsData[i] || {
+                cella: dot.cella,
+                domanda: '',
+                rispostaCorretta: '',
+                risposta1: '',
+                risposta2: '',
+                collapsed: false // tutte aperte all'apertura
+            };
+        });
+    } else {
+        // Se già esiste, apri tutte le card
+        questionsData.forEach(q => q.collapsed = false);
+    }
+    const container = document.getElementById('questions-cards-container');
+    container.innerHTML = '';
+    questionsData.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.style = 'border:1px solid #ccc; border-radius:8px; padding:12px; background:#fafafa; position:relative;';
+        if (q.collapsed) {
+            card.innerHTML = `<div style='display:flex; align-items:center; justify-content:space-between;'>
+                <span><b>${q.cella}</b> | ${q.domanda}</span>
+                <button type='button' data-idx='${idx}' class='open-card-btn'>Apri</button>
+            </div>`;
+        } else {
+            card.innerHTML = `
+                <button type='button' data-idx='${idx}' class='close-card-btn' style='position:absolute; top:8px; right:8px;'>Chiudi</button>
+                <div style=\"margin-bottom:8px;\"><label>Numero cella: <input type=\"text\" value=\"${q.cella}\" readonly style=\"background:#eee; width:60px;\" /></label></div>
+                <div style=\"margin-bottom:8px;\"><label>Dom: <input type=\"text\" value=\"${q.domanda}\" data-field=\"domanda\" data-idx=\"${idx}\" /></label></div>
+                <div style=\"margin-bottom:8px;\"><label>Risp: <input type=\"text\" value=\"${q.rispostaCorretta}\" data-field=\"rispostaCorretta\" data-idx=\"${idx}\" class=\"input-risp\" /></label></div>
+                <div style=\"margin-bottom:8px;\"><label>Err1: <input type=\"text\" value=\"${q.risposta1}\" data-field=\"risposta1\" data-idx=\"${idx}\" class=\"input-err\" /></label></div>
+                <div style=\"margin-bottom:8px;\"><label>Err2: <input type=\"text\" value=\"${q.risposta2}\" data-field=\"risposta2\" data-idx=\"${idx}\" class=\"input-err\" /></label></div>
+            `;
+        }
+        container.appendChild(card);
+    });
+    // Listener per aggiornare questionsData
+    container.querySelectorAll('input[type="text"]').forEach(input => {
+        if (input.hasAttribute('readonly')) return;
+        input.addEventListener('input', function(e) {
+            const idx = parseInt(e.target.getAttribute('data-idx'));
+            const field = e.target.getAttribute('data-field');
+            questionsData[idx][field] = e.target.value;
+        });
+    });
+    // Listener per chiudere/aprire card
+    container.querySelectorAll('.close-card-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            const idx = parseInt(e.target.getAttribute('data-idx'));
+            questionsData[idx].collapsed = true;
+            questionsBtn.click();
+        };
+    });
+    container.querySelectorAll('.open-card-btn').forEach(btn => {
+        btn.onclick = function(e) {
+            const idx = parseInt(e.target.getAttribute('data-idx'));
+            questionsData[idx].collapsed = false;
+            questionsBtn.click();
+        };
+    });
     questionsModal.style.display = 'flex';
 });
 closeQuestionsModalBtn.addEventListener('click', function() {
     questionsModal.style.display = 'none';
+});
+
+exportBtn.addEventListener('click', function() {
+    const points = debugDots.map(d => ({
+        cella: d.cella,
+        x: Math.round(d.x),
+        y: Math.round(d.y)
+    }));
+    const json = JSON.stringify(points, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'celle.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 100);
 });

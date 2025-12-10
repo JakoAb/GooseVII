@@ -22,6 +22,7 @@
         <p class="label-debug">celle</p>
         <button id="toggle-pointer" title="Puntamento">Aggiungi</button>
         <button id="import-points" title="Importa punti">Importa</button>
+        <button id="export-points" title="Esporta punti">Esporta</button>
         <button id="clear-points" title="Elimina tutti i punti">Cancella</button>
         <p class="label-debug">Domande</p>
         <button id="questions-btn" title="Domande">Modifica</button>
@@ -39,11 +40,11 @@
         </div>
     </div>
 
-    <div id="questions-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:1001; justify-content:center; align-items:center;">
-        <div style="background:#fff; padding:24px; border-radius:8px; min-width:300px; position:relative;">
+    <div id="questions-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:10001; justify-content:center; align-items:center;">
+        <div style="background:#fff; padding:24px; border-radius:8px; min-width:300px; position:relative; max-width:600px; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column;">
             <h3>Domande</h3>
-            <!-- Qui verrà popolato il contenuto -->
-            <button id="close-questions-modal">Chiudi</button>
+            <div id="questions-cards-container" style="display:flex; flex-direction:column; gap:16px; margin-bottom:16px;"></div>
+            <button id="close-questions-modal" >Salva e chiudi</button>
         </div>
     </div>
 
