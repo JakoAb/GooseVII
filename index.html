@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gioco</title>
     <link rel="stylesheet" href="main.css">
-    <!-- Gli stili sono stati spostati nel file main.css -->
 </head>
 <body>
     <div id="main-content">
@@ -19,13 +18,35 @@
         </div>
     </div>
     <div id="debug-bar">
-        <button id="toggle-blur" title="Blur">B</button>
-        <div class="debug-row">
-            <button id="toggle-pointer" title="Puntamento">P</button>
-            <button id="export-points" title="Esporta punti">E</button>
-            <button id="import-points" title="Importa punti">I</button>
+        <button id="toggle-blur" title="Blur">Toggle Blur</button>
+        <p class="label-debug">celle</p>
+        <button id="toggle-pointer" title="Puntamento">Aggiungi</button>
+        <button id="import-points" title="Importa punti">Importa</button>
+        <button id="clear-points" title="Elimina tutti i punti">Cancella</button>
+        <p class="label-debug">Domande</p>
+        <button id="questions-btn" title="Domande">Modifica</button>
+    </div>
+
+    <div id="import-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:#fff; padding:24px; border-radius:8px; min-width:300px; position:relative;">
+            <h3>Importa punti da JSON</h3>
+            <input type="file" id="json-file-input" accept=".json" style="margin-bottom:16px;" />
+            <div style="display:flex; gap:8px;">
+                <button id="close-import-modal">Chiudi</button>
+                <button id="load-json-points">Carica</button>
+            </div>
+            <div id="import-error" style="color:red; margin-top:8px; display:none;"></div>
         </div>
     </div>
-    <script src="main.js"></script>
+
+    <div id="questions-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:1001; justify-content:center; align-items:center;">
+        <div style="background:#fff; padding:24px; border-radius:8px; min-width:300px; position:relative;">
+            <h3>Domande</h3>
+            <!-- Qui verrà popolato il contenuto -->
+            <button id="close-questions-modal">Chiudi</button>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="main.js"></script>
 </body>
 </html>

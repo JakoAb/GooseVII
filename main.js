@@ -12,12 +12,21 @@ let isZoomActive = false;
 let isPointerMode = false;
 const pointerBtn = document.getElementById('toggle-pointer');
 const blurBtn = document.getElementById('toggle-blur');
+const clearPointsBtn = document.getElementById('clear-points');
+const questionsBtn = document.getElementById('questions-btn');
 const exportBtn = document.getElementById('export-points');
 const importBtn = document.getElementById('import-points');
 const mainContent = document.getElementById('main-content');
 let debugDots = [];
 
 const map = document.getElementById('map');
+const importModal = document.getElementById('import-modal');
+const jsonFileInput = document.getElementById('json-file-input');
+const closeImportModalBtn = document.getElementById('close-import-modal');
+const loadJsonPointsBtn = document.getElementById('load-json-points');
+const importErrorDiv = document.getElementById('import-error');
+const questionsModal = document.getElementById('questions-modal');
+const closeQuestionsModalBtn = document.getElementById('close-questions-modal');
 
 function setTransform() {
     map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
@@ -140,23 +149,16 @@ async function importPoints(mainContent, debugDots) {
     }
 }
 
-function exportPoints(debugDots) {
-    const points = debugDots.map(d => ({cella: d.cella, x: Math.round(d.x), y: Math.round(d.y)}));
-    const json = JSON.stringify(points, null, 2);
-    console.log('Esporta punti:', json);
-    alert(json);
-}
-
-// Sostituisco le chiamate agli import con le funzioni locali
 pointerBtn.addEventListener('click', () => {
     isPointerMode = !isPointerMode;
     pointerBtn.classList.toggle('active', isPointerMode);
     mainContent.style.cursor = isPointerMode ? 'crosshair' : '';
-    document.getElementById('export-points').style.display = isPointerMode ? 'inline-block' : 'none';
-    document.getElementById('import-points').style.display = isPointerMode ? 'inline-block' : 'none';
-    if (!isPointerMode) {
-        removeAllDebugDots(debugDots);
-    }
+    // Nascondi/mostra i bottoni in base alla modalità
+    clearPointsBtn.style.display = isPointerMode ? 'inline-block' : 'inline-block';
+});
+
+clearPointsBtn.addEventListener('click', function() {
+    removeAllDebugDots(debugDots);
 });
 
 mainContent.addEventListener('click', function(e) {
@@ -164,7 +166,6 @@ mainContent.addEventListener('click', function(e) {
     const rect = mainContent.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    console.log('Click su main-content:', x, y);
     addDebugDot(mainContent, debugDots, x, y, debugDots.length + 1);
 });
 
@@ -172,30 +173,62 @@ mainContent.addEventListener('contextmenu', function(e) {
     if (!isPointerMode) return;
     if (e.target.classList.contains('debug-dot')) {
         e.preventDefault();
-        removeDebugDot(debugDots, e.target);
+        const x = e.target.dataset.x;
+        const y = e.target.dataset.y;
+        console.log(`Coordinate punto: x=${x}, y=${y}`);
     } else {
         e.preventDefault();
     }
 });
 
-importBtn.addEventListener('click', async function() {
-    try {
-            const response = await fetch('database/celle.json');
-            if (!response.ok) throw new Error('Impossibile leggere celle.json');
-            const points = await response.json();
+importBtn.addEventListener('click', function() {
+    importModal.style.display = 'flex';
+    importErrorDiv.style.display = 'none';
+    importErrorDiv.textContent = '';
+    jsonFileInput.value = '';
+});
+closeImportModalBtn.addEventListener('click', function() {
+    importModal.style.display = 'none';
+    importErrorDiv.style.display = 'none';
+    importErrorDiv.textContent = '';
+    jsonFileInput.value = '';
+});
+loadJsonPointsBtn.addEventListener('click', function() {
+    importErrorDiv.style.display = 'none';
+    importErrorDiv.textContent = '';
+    const file = jsonFileInput.files[0];
+    if (!file) {
+        importErrorDiv.textContent = 'Seleziona un file JSON.';
+        importErrorDiv.style.display = 'block';
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const points = JSON.parse(e.target.result);
+            if (!Array.isArray(points)) throw new Error('Il file JSON deve essere un array di punti.');
             removeAllDebugDots(debugDots);
             points.forEach((p, i) => {
+                if (typeof p.x !== 'number' || typeof p.y !== 'number') throw new Error('Ogni punto deve avere x e y numerici.');
                 addDebugDot(mainContent, debugDots, p.x, p.y, p.cella ?? (i+1));
             });
+            importModal.style.display = 'none';
             alert('Punti importati!');
         } catch (err) {
-            alert('Errore importazione: ' + err.message);
+            importErrorDiv.textContent = 'Errore: ' + err.message;
+            importErrorDiv.style.display = 'block';
         }
+    };
+    reader.onerror = function() {
+        importErrorDiv.textContent = 'Errore lettura file.';
+        importErrorDiv.style.display = 'block';
+    };
+    reader.readAsText(file);
 });
 
-exportBtn.addEventListener('click', function() {
-    const points = debugDots.map(d => ({cella: d.cella, x: Math.round(d.x), y: Math.round(d.y)}));
-        const json = JSON.stringify(points, null, 2);
-        console.log('Esporta punti:', json);
-        alert(json);
+questionsBtn.addEventListener('click', function() {
+    questionsModal.style.display = 'flex';
+});
+closeQuestionsModalBtn.addEventListener('click', function() {
+    questionsModal.style.display = 'none';
 });
