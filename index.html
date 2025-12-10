@@ -1,53 +1,55 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gioco</title>
-    <link rel="stylesheet" href="main.css">
+  <meta charset="UTF-8">
+  <title>Goose VII</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #f8f8f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-bottom: 40px;
+      font-size: 3rem;
+      color: #222;
+      text-align: center;
+    }
+    .button-container {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .big-btn {
+      width: 100%;
+      padding: 32px 0;
+      font-size: 2rem;
+      border: none;
+      border-radius: 12px;
+      background: #ffd600;
+      color: #222;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .big-btn:hover {
+      background: #ffea00;
+    }
+  </style>
 </head>
 <body>
-    <div id="main-content">
-        <img id="map-background" src="assets/back_celle.png" alt="Sfondo celle" style="z-index:0;" />
-        <img id="map" src="assets/map.png" alt="Mappa" style="z-index:1;" />
-        <div class="blur-overlay">
-            <div class="blur-top"></div>
-            <div class="blur-bottom"></div>
-            <div class="blur-left"></div>
-            <div class="blur-right"></div>
-        </div>
-    </div>
-    <div id="debug-bar">
-        <button id="toggle-blur" title="Blur">Toggle Blur</button>
-        <p class="label-debug">celle</p>
-        <button id="toggle-pointer" title="Puntamento">Aggiungi</button>
-        <button id="import-points" title="Importa punti">Importa</button>
-        <button id="export-points" title="Esporta punti">Esporta</button>
-        <button id="clear-points" title="Elimina tutti i punti">Cancella</button>
-        <p class="label-debug">Domande</p>
-        <button id="questions-btn" title="Domande">Modifica</button>
-    </div>
-
-    <div id="import-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:#fff; padding:24px; border-radius:8px; min-width:300px; position:relative;">
-            <h3>Importa punti da JSON</h3>
-            <input type="file" id="json-file-input" accept=".json" style="margin-bottom:16px;" />
-            <div style="display:flex; gap:8px;">
-                <button id="close-import-modal">Chiudi</button>
-                <button id="load-json-points">Carica</button>
-            </div>
-            <div id="import-error" style="color:red; margin-top:8px; display:none;"></div>
-        </div>
-    </div>
-
-    <div id="questions-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:10001; justify-content:center; align-items:center;">
-        <div style="background:#fff; padding:24px; border-radius:8px; min-width:300px; position:relative; max-width:600px; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column;">
-            <h3>Domande</h3>
-            <div id="questions-cards-container" style="display:flex; flex-direction:column; gap:16px; margin-bottom:16px;"></div>
-            <button id="close-questions-modal" >Salva e chiudi</button>
-        </div>
-    </div>
-
-    <script type="text/javascript" src="main.js"></script>
+  <h1>Goose VII</h1>
+  <div class="button-container">
+    <button class="big-btn" onclick="window.location.href='game_index.html'">Gioca</button>
+    <button class="big-btn" onclick="window.location.href='tool_index.html'">Tool</button>
+  </div>
 </body>
 </html>
