@@ -10,6 +10,13 @@ body {
     width: 100vw;
     background-color: #28212f;
 }
+#main-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
 #main-content {
     display: flex;
     flex-direction: column;
@@ -22,8 +29,10 @@ body {
     overflow: hidden;
     position: relative;
 }
+.image-container img {
+    position: relative;
+}
 #main-content img {
-    position: absolute;
     top: 0;
     left: 0;
     margin-top: 0;

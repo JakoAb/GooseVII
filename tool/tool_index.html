@@ -7,15 +7,28 @@
     <link rel="stylesheet" href="tool_index.css">
 </head>
 <body>
+
     <div id="main-content">
-        <img id="map-background" src="../assets/back_celle.png" alt="Sfondo celle" style="z-index:0;" />
-        <img id="map" src="../assets/map.png" alt="Mappa" style="z-index:1;" />
+
+        <div id="main-container">
+
+            <div class="image-container">
+                <img id="map-background" src="../assets/back_celle.png" alt="Sfondo celle" style="z-index:0;" />
+                <img id="map" src="../assets/map.png" alt="Mappa" style="z-index:1;" />
+            </div>
+
+            <div id="point-container">
+            </div>
+
+        </div>
+
         <div class="blur-overlay">
             <div class="blur-top"></div>
             <div class="blur-bottom"></div>
             <div class="blur-left"></div>
             <div class="blur-right"></div>
         </div>
+
     </div>
     <div id="debug-bar">
         <p class="label-debug">celle</p>

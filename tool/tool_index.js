@@ -15,6 +15,8 @@ const clearPointsBtn = document.getElementById('clear-points');
 const exportBtn = document.getElementById('export-points');
 const importBtn = document.getElementById('import-points');
 const mainContent = document.getElementById('main-content');
+const pointContainer = document.getElementById('point-container');
+const mainContainer = document.getElementById('main-container');
 let debugDots = [];
 let questionsData = [];
 
@@ -27,9 +29,10 @@ const importErrorDiv = document.getElementById('import-error');
 const questionsModal = document.getElementById('questions-modal');
 const closeQuestionsModalBtn = document.getElementById('close-questions-modal');
 const exportAllBtn = document.getElementById('export-all-btn');
+const imageContainer = document.querySelector('.image-container');
 
 function setTransform() {
-    map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+    //mainContainer.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
 }
 
 function centerMap() {
@@ -121,7 +124,7 @@ function addDebugDot(mainContent, debugDots, x, y, cella) {
     dot.style.fontSize = '1.1em';
     dot.style.color = '#222';
     dot.innerText = cella;
-    mainContent.appendChild(dot);
+    pointContainer.appendChild(dot);
     debugDots.push({el: dot, x, y, cella});
 }
 
