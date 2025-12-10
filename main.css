@@ -157,6 +157,10 @@ body {
     font-size: 1.1em;
     color: #222;
 }
+.debug-dot:hover{
+    cursor:pointer;
+    background: #e50096;
+}
 .input-risp {
     border: 2px solid #2ecc40 !important;
     background: #eaffea;

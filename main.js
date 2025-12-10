@@ -367,3 +367,17 @@ exportAllBtn.addEventListener('click', function() {
         URL.revokeObjectURL(url);
     }, 100);
 });
+
+window.addEventListener('DOMContentLoaded', function() {
+        if (typeof cellePreload !== 'undefined' && Array.isArray(cellePreload) && cellePreload.length > 0) {
+            importPreloadedCells(cellePreload);
+        }
+    });
+
+function importPreloadedCells(cells) {
+    removeAllDebugDots(debugDots);
+    cells.forEach((p, i) => {
+        if (typeof p.x !== 'number' || typeof p.y !== 'number') throw new Error('Ogni punto deve avere x e y numerici.');
+        addDebugDot(mainContent, debugDots, p.x, p.y, p.cella ?? (i+1));
+    });
+}
