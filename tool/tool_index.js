@@ -224,12 +224,7 @@ mainContent.addEventListener("click", function (e) {
       removeDebugDot(debugDots, e.target);
       return;
     }
-    if (isPointerMode) {
-      // Apri la modale domande della cella
-      const cella = e.target.dataset.cella;
-      openCellQuestionsModal(parseInt(cella));
-      return;
-    }
+    // NIENTE apertura modale domande con click sinistro
   }
   if (!isPointerMode || e.button !== 0) return;
   const rect = mainContent.getBoundingClientRect();
@@ -239,15 +234,16 @@ mainContent.addEventListener("click", function (e) {
 });
 
 mainContent.addEventListener("contextmenu", function (e) {
-  if (!isPointerMode) return;
   if (e.target.classList.contains("debug-dot")) {
     e.preventDefault();
-    const x = e.target.dataset.x;
-    const y = e.target.dataset.y;
-    console.log(`Coordinate punto: x=${x}, y=${y}`);
-  } else {
-    e.preventDefault();
+    if (!isDeleteMode && !isDragMode) {
+      const cella = e.target.dataset.cella;
+      openCellQuestionsModal(parseInt(cella));
+    }
+    return;
   }
+  if (!isPointerMode) return;
+  e.preventDefault();
 });
 
 importBtn.addEventListener("click", function () {
@@ -526,3 +522,14 @@ document.addEventListener("mouseup", function (e) {
   draggedDot = null;
   document.body.style.cursor = "";
 });
+
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    const modal = document.getElementById("cell-questions-modal");
+    if (modal && modal.style.display === "flex") {
+      const closeBtn = document.getElementById("close-cell-questions-modal");
+      if (closeBtn) closeBtn.click();
+    }
+  }
+});
+
