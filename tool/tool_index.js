@@ -322,16 +322,14 @@ exportBtn.addEventListener("click", function () {
 exportAllBtn.addEventListener("click", function () {
   const database = debugDots.map((d, idx) => {
     const perc = getPercentCoords(d.x, d.y);
-    const q = questionsData[idx] || {};
     let domande = [];
-    if (q.domanda && q.rispostaCorretta) {
-      domande.push({
-        domanda: q.domanda,
-        rispostaCorretta: q.rispostaCorretta,
-        altreRisposte: [q.risposta1 || "", q.risposta2 || "", ""].filter(
-          (r) => r !== ""
-        ),
-      });
+    if (questionsData[idx] && Array.isArray(questionsData[idx].domande)) {
+      domande = questionsData[idx].domande.map(q => ({
+        domanda: q.domanda || "",
+        rispostaCorretta: q.rispostaCorretta || "",
+        risposta1: q.risposta1 || "",
+        risposta2: q.risposta2 || ""
+      }));
     }
     return {
       cella: d.cella,
