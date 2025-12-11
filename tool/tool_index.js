@@ -10,7 +10,14 @@ let lastX = 0;
 let lastY = 0;
 let isZoomActive = false;
 let isPointerMode = false;
+let isDragMode = false;
+let isDeleteMode = false;
+let draggedDot = null;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
 const pointerBtn = document.getElementById("toggle-pointer");
+const dragBtn = document.getElementById("toggle-drag");
+const deleteBtn = document.getElementById("toggle-delete");
 const clearPointsBtn = document.getElementById("clear-points");
 const exportBtn = document.getElementById("export-points");
 const importBtn = document.getElementById("import-points");
@@ -161,26 +168,68 @@ async function importPoints(mainContent, debugDots) {
   }
 }
 
+function deactivateAllModes() {
+  isPointerMode = false;
+  isDragMode = false;
+  isDeleteMode = false;
+  pointerBtn.classList.remove("active");
+  dragBtn.classList.remove("active");
+  deleteBtn.classList.remove("active");
+  mainContent.style.cursor = "";
+}
+
 pointerBtn.addEventListener("click", () => {
-  isPointerMode = !isPointerMode;
-  pointerBtn.classList.toggle("active", isPointerMode);
-  mainContent.style.cursor = isPointerMode ? "crosshair" : "";
-  // Nascondi/mostra i bottoni in base alla modalità
-  clearPointsBtn.style.display = isPointerMode
-    ? "inline-block"
-    : "inline-block";
+  if (isPointerMode) {
+    deactivateAllModes();
+    return;
+  }
+  deactivateAllModes();
+  isPointerMode = true;
+  pointerBtn.classList.add("active");
+  mainContent.style.cursor = "crosshair";
+});
+
+dragBtn.addEventListener("click", () => {
+  if (isDragMode) {
+    deactivateAllModes();
+    return;
+  }
+  deactivateAllModes();
+  isDragMode = true;
+  dragBtn.classList.add("active");
+  mainContent.style.cursor = "grab";
+});
+
+deleteBtn.addEventListener("click", () => {
+  if (isDeleteMode) {
+    deactivateAllModes();
+    return;
+  }
+  deactivateAllModes();
+  isDeleteMode = true;
+  deleteBtn.classList.add("active");
+  mainContent.style.cursor = "not-allowed";
 });
 
 clearPointsBtn.addEventListener("click", function () {
-  removeAllDebugDots(debugDots);
+  if (confirm("Sei sicuro di voler cancellare tutti i punti?")) {
+    removeAllDebugDots(debugDots);
+  }
 });
 
 mainContent.addEventListener("click", function (e) {
   if (e.target.classList.contains("debug-dot")) {
-    // Apri la modale domande della cella
-    const cella = e.target.dataset.cella;
-    openCellQuestionsModal(parseInt(cella));
-    return;
+    if (isDeleteMode) {
+      // Cancella punto
+      removeDebugDot(debugDots, e.target);
+      return;
+    }
+    if (isPointerMode) {
+      // Apri la modale domande della cella
+      const cella = e.target.dataset.cella;
+      openCellQuestionsModal(parseInt(cella));
+      return;
+    }
   }
   if (!isPointerMode || e.button !== 0) return;
   const rect = mainContent.getBoundingClientRect();
@@ -426,3 +475,54 @@ function openCellQuestionsModal(cella) {
   };
   modal.style.display = "flex";
 }
+
+// Gestione drag & drop dei punti
+pointContainer.addEventListener("mousedown", function (e) {
+  if (!isDragMode) return;
+  if (!e.target.classList.contains("debug-dot")) return;
+  draggedDot = e.target;
+  const rect = pointContainer.getBoundingClientRect();
+  // Calcola offset rispetto al centro del punto
+  dragOffsetX = e.clientX - rect.left - (draggedDot.offsetLeft + draggedDot.offsetWidth / 2);
+  dragOffsetY = e.clientY - rect.top - (draggedDot.offsetTop + draggedDot.offsetHeight / 2);
+  document.body.style.cursor = "grabbing";
+});
+
+document.addEventListener("mousemove", function (e) {
+  if (!isDragMode || !draggedDot) return;
+  let rect = pointContainer.getBoundingClientRect();
+  // Se l'altezza è zero, la imposta come quella di mainContent
+  if (rect.height === 0) {
+    pointContainer.style.height = mainContent.offsetHeight + "px";
+    rect = pointContainer.getBoundingClientRect();
+  }
+  // Nuova posizione centro punto
+  let x = e.clientX - rect.left - dragOffsetX;
+  let y = e.clientY - rect.top - dragOffsetY;
+  // Limita il centro del punto all'interno del contenitore
+  x = Math.max(draggedDot.offsetWidth / 2, Math.min(x, rect.width - draggedDot.offsetWidth / 2));
+  y = Math.max(draggedDot.offsetHeight / 2, Math.min(y, rect.height - draggedDot.offsetHeight / 2));
+  // Aggiorna posizione
+  draggedDot.style.left = ((x - draggedDot.offsetWidth / 2) / rect.width * 100) + "%";
+  draggedDot.style.top = ((y - draggedDot.offsetHeight / 2) / rect.height * 100) + "%";
+});
+
+document.addEventListener("mouseup", function (e) {
+  if (!isDragMode || !draggedDot) return;
+  const rect = pointContainer.getBoundingClientRect();
+  let x = e.clientX - rect.left - dragOffsetX;
+  let y = e.clientY - rect.top - dragOffsetY;
+  x = Math.max(draggedDot.offsetWidth / 2, Math.min(x, rect.width - draggedDot.offsetWidth / 2));
+  y = Math.max(draggedDot.offsetHeight / 2, Math.min(y, rect.height - draggedDot.offsetHeight / 2));
+  // Aggiorna dataset e array debugDots
+  draggedDot.dataset.x = Math.round(x);
+  draggedDot.dataset.y = Math.round(y);
+  const cella = draggedDot.dataset.cella;
+  const idx = debugDots.findIndex((d) => d.cella == cella);
+  if (idx !== -1) {
+    debugDots[idx].x = Math.round(x);
+    debugDots[idx].y = Math.round(y);
+  }
+  draggedDot = null;
+  document.body.style.cursor = "";
+});
