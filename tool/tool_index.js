@@ -45,6 +45,7 @@ const questionsModal = document.getElementById("questions-modal");
 const closeQuestionsModalBtn = document.getElementById("close-questions-modal");
 const exportAllBtn = document.getElementById("export-all-btn");
 const imageContainer = document.querySelector(".image-container");
+let imageLayersBase64 = [];
 
 document.addEventListener("mousemove", function (e) {});
 document.addEventListener("mouseup", function () {});
@@ -120,6 +121,8 @@ window.addEventListener("DOMContentLoaded", function () {
       imgUploadError.textContent = "";
       // Svuota image-container
       while (imageContainer.firstChild) imageContainer.removeChild(imageContainer.firstChild);
+      // Svuota array base64 globale
+      imageLayersBase64 = [];
       // Carica i layer in ordine
       const cards = Array.from(imgUploadCardsContainer.children);
       let loaded = 0;
@@ -133,10 +136,13 @@ window.addEventListener("DOMContentLoaded", function () {
         const input = card.querySelector('input[type="file"]');
         if (!input || !input.files || !input.files[0]) {
           // Salta layer vuoti
+          imageLayersBase64[idx] = null;
           loaded++;
           if (loaded === toLoad) {
             imgUploadModal.style.display = "none";
             resetImgUploadModal();
+            // Rimuovi eventuali null
+            imageLayersBase64 = imageLayersBase64.filter(x => x);
           }
           return;
         }
@@ -149,19 +155,24 @@ window.addEventListener("DOMContentLoaded", function () {
           div.style.backgroundImage = `url('${url}')`;
           div.style.zIndex = 2 + idx;
           imageContainer.appendChild(div);
+          imageLayersBase64[idx] = url;
           loaded++;
           if (loaded === toLoad) {
             imgUploadModal.style.display = "none";
             resetImgUploadModal();
+            // Rimuovi eventuali null
+            imageLayersBase64 = imageLayersBase64.filter(x => x);
           }
         };
         reader.onerror = function () {
           imgUploadError.textContent = `Errore caricamento immagine layer ${idx + 1}`;
           imgUploadError.style.display = "block";
+          imageLayersBase64[idx] = null;
           loaded++;
           if (loaded === toLoad) {
             imgUploadModal.style.display = "none";
             resetImgUploadModal();
+            imageLayersBase64 = imageLayersBase64.filter(x => x);
           }
         };
         reader.readAsDataURL(file);
@@ -398,7 +409,7 @@ exportBtn.addEventListener("click", function () {
 });
 
 exportAllBtn.addEventListener("click", function () {
-  const database = debugDots.map((d, idx) => {
+  const celle = debugDots.map((d, idx) => {
     const perc = getPercentCoords(d.x, d.y);
     let domande = [];
     if (questionsData[idx] && Array.isArray(questionsData[idx].domande)) {
@@ -415,7 +426,11 @@ exportAllBtn.addEventListener("click", function () {
       domande: domande,
     };
   });
-  const js = "let database = " + JSON.stringify(database, null, 2) + ";";
+  const exportObj = {
+    celle: celle,
+    layers: imageLayersBase64.slice()
+  };
+  const js = "let settings = " + JSON.stringify(exportObj, null, 2) + ";";
   const blob = new Blob([js], { type: "application/javascript" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
