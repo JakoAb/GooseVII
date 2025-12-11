@@ -13,6 +13,13 @@ let database = [
           "0",
           "22"
         ]
+      },{
+        "domanda": "quanto fa 5+5?",
+        "rispostaCorretta": "10",
+        "altreRisposte": [
+          "0",
+          "55"
+        ]
       }
     ]
   },
