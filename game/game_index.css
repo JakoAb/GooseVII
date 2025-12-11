@@ -1,0 +1,118 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background-color: #28212f;
+}
+#main-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+#main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  background-color: #28212f;
+  overflow: hidden;
+  position: relative;
+}
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.bg-image {
+  position: absolute;
+  top: 0;
+  left: 50%; /* Center horizontally */
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: top center; /* Center the image horizontally */
+  pointer-events: none;
+  transform: translateX(-50%); /* Shift left by 50% of its width to center */
+}
+.blur-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+.blur-top,
+.blur-bottom,
+.blur-left,
+.blur-right {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+.blur-top {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 90px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(40, 33, 47, 0.35) 100%
+  );
+  filter: blur(20px);
+}
+.blur-bottom {
+  bottom: -50px;
+  left: 0;
+  width: 100%;
+  height: 90px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(40, 33, 47, 0.35) 100%
+  );
+  filter: blur(20px);
+}
+.blur-left {
+  top: 0;
+  left: 0;
+  width: 90px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(40, 33, 47, 0.35) 100%
+  );
+  filter: blur(20px);
+}
+.blur-right {
+  top: 0;
+  right: 0;
+  width: 90px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(40, 33, 47, 0.35) 100%
+  );
+  filter: blur(20px);
+}
+.player-pin {
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: left 0.5s, top 0.5s;
+  pointer-events: auto;
+  scale: 1.5;
+}
