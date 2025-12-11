@@ -10,8 +10,7 @@
     <div id="main-content">
       <div id="main-container">
         <div class="image-container">
-          <div id="map-background" class="bg-image" style="z-index: 0"></div>
-          <div id="map" class="bg-image" style="z-index: 1"></div>
+          <div class="bg-image" style="background-image: url(../assets/x_init.png); z-index: 2;"></div>
         </div>
 
         <div id="point-container"></div>
@@ -33,6 +32,8 @@
       <p class="label-debug">Import/Export celle</p>
       <button id="import-points" title="Importa punti">Importa da JSON</button>
       <button id="export-points" title="Esporta punti">Esporta in JSON</button>
+      <p class="label-debug">Carica Immagini</p>
+      <button id="load-img-btn" title="Carica immagini">Carica Immagini Sfondo</button>
       <p class="label-debug">Finalizza scenario</p>
       <button id="export-all-btn" title="Domande">Esporta tutto</button>
     </div>
@@ -164,6 +165,56 @@
         <button id="close-cell-questions-modal" style="align-self: center">
           Salva e Chiudi
         </button>
+      </div>
+    </div>
+
+    <!-- Modale caricamento immagini -->
+    <div
+      id="img-upload-modal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10010;
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <div
+        style="
+          background: #fff;
+          padding: 24px;
+          border-radius: 8px;
+          min-width: 300px;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          max-width: 400px;
+        "
+      >
+        <h3>Carica layers immagine</h3>
+        <div
+          id="img-upload-cards-container"
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+          "
+        ></div>
+        <div style="display: flex; gap: 8px; align-items: center">
+          <button id="add-img-upload-card" title="Aggiungi layer">+</button>
+          <button id="upload-img-btn">Carica</button>
+          <button id="close-img-upload-modal">Chiudi</button>
+        </div>
+        <div
+          id="img-upload-error"
+          style="color: red; display: none"
+        ></div>
       </div>
     </div>
 

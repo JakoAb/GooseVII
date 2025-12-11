@@ -21,6 +21,13 @@ const deleteBtn = document.getElementById("toggle-delete");
 const clearPointsBtn = document.getElementById("clear-points");
 const exportBtn = document.getElementById("export-points");
 const importBtn = document.getElementById("import-points");
+const loadImgBtn = document.getElementById("load-img-btn");
+const imgUploadModal = document.getElementById("img-upload-modal");
+const imgUploadCardsContainer = document.getElementById("img-upload-cards-container");
+const addImgUploadCardBtn = document.getElementById("add-img-upload-card");
+const uploadImgBtn = document.getElementById("upload-img-btn");
+const closeImgUploadModalBtn = document.getElementById("close-img-upload-modal");
+const imgUploadError = document.getElementById("img-upload-error");
 const mainContent = document.getElementById("main-content");
 const pointContainer = document.getElementById("point-container");
 const mainContainer = document.getElementById("main-container");
@@ -38,58 +45,140 @@ const questionsModal = document.getElementById("questions-modal");
 const closeQuestionsModalBtn = document.getElementById("close-questions-modal");
 const exportAllBtn = document.getElementById("export-all-btn");
 const imageContainer = document.querySelector(".image-container");
-
-function setTransform() {
-  //mainContainer.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-}
-
-function centerMap() {
-  // Centra la "mappa" (div) nel contenitore
-  const containerRect = mainContent.getBoundingClientRect();
-  const mapRect = map.getBoundingClientRect();
-  // Usa la dimensione del contenitore per centrare la mappa
-  originX = (containerRect.width - mapRect.width) / 2;
-  originY = (containerRect.height - mapRect.height) / 2;
-  setTransform();
-}
+let imageLayersBase64 = [];
 
 document.addEventListener("mousemove", function (e) {});
 document.addEventListener("mouseup", function () {});
 
 // Non c'è più evento load, centra la mappa al DOMContentLoaded
 window.addEventListener("DOMContentLoaded", function () {
-  centerMap();
-});
+  const imgUploadModal = document.getElementById("img-upload-modal");
+  const imgUploadCardsContainer = document.getElementById("img-upload-cards-container");
+  const addImgUploadCardBtn = document.getElementById("add-img-upload-card");
+  const uploadImgBtn = document.getElementById("upload-img-btn");
+  const closeImgUploadModalBtn = document.getElementById("close-img-upload-modal");
+  const imgUploadError = document.getElementById("img-upload-error");
+  const imageContainer = document.querySelector(".image-container");
 
-map.addEventListener("wheel", function (e) {
-  if (!isZoomActive) return;
-  e.preventDefault();
-  const rect = map.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-  const prevScale = scale;
-  if (e.deltaY < 0) {
-    scale = Math.min(maxScale, scale + 0.1);
-  } else {
-    scale = Math.max(minScale, scale - 0.1);
+  function createImgUploadCard(idx) {
+    const card = document.createElement("div");
+    card.className = "img-upload-card";
+    card.style = "display:flex; align-items:center; gap:8px;";
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.style = "flex:1;";
+    input.setAttribute("data-layer-idx", idx);
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.textContent = "x";
+    removeBtn.title = "Rimuovi layer";
+    removeBtn.onclick = function () {
+      card.remove();
+      updateLayerIndices();
+    };
+    card.appendChild(input);
+    card.appendChild(removeBtn);
+    return card;
   }
-  // Zoom centrato sul punto del mouse
-  originX -= mouseX / prevScale - mouseX / scale;
-  originY -= mouseY / prevScale - mouseY / scale;
-  setTransform();
-  if (scale === 1) {
-    centerMap();
-  }
-});
 
-map.addEventListener("mousedown", function (e) {
-  if (scale === 1) return;
-  isDragging = true;
-  map.classList.add("zooming");
-  startX = e.clientX;
-  startY = e.clientY;
-  lastX = originX;
-  lastY = originY;
+  function updateLayerIndices() {
+    Array.from(imgUploadCardsContainer.children).forEach((card, idx) => {
+      const input = card.querySelector('input[type="file"]');
+      if (input) input.setAttribute("data-layer-idx", idx);
+    });
+  }
+
+  function resetImgUploadModal() {
+    imgUploadCardsContainer.innerHTML = "";
+    imgUploadError.style.display = "none";
+    imgUploadError.textContent = "";
+    // Aggiungi almeno una card
+    imgUploadCardsContainer.appendChild(createImgUploadCard(0));
+  }
+
+  if (loadImgBtn) {
+    loadImgBtn.addEventListener("click", function () {
+      imgUploadModal.style.display = "flex";
+      resetImgUploadModal();
+    });
+  }
+  if (closeImgUploadModalBtn) {
+    closeImgUploadModalBtn.addEventListener("click", function () {
+      imgUploadModal.style.display = "none";
+      resetImgUploadModal();
+    });
+  }
+  if (addImgUploadCardBtn) {
+    addImgUploadCardBtn.addEventListener("click", function () {
+      const idx = imgUploadCardsContainer.children.length;
+      imgUploadCardsContainer.appendChild(createImgUploadCard(idx));
+    });
+  }
+  if (uploadImgBtn) {
+    uploadImgBtn.addEventListener("click", function () {
+      imgUploadError.style.display = "none";
+      imgUploadError.textContent = "";
+      // Svuota image-container
+      while (imageContainer.firstChild) imageContainer.removeChild(imageContainer.firstChild);
+      // Svuota array base64 globale
+      imageLayersBase64 = [];
+      // Carica i layer in ordine
+      const cards = Array.from(imgUploadCardsContainer.children);
+      let loaded = 0;
+      let toLoad = cards.length;
+      if (toLoad === 0) {
+        imgUploadError.textContent = "Aggiungi almeno un layer.";
+        imgUploadError.style.display = "block";
+        return;
+      }
+      cards.forEach((card, idx) => {
+        const input = card.querySelector('input[type="file"]');
+        if (!input || !input.files || !input.files[0]) {
+          // Salta layer vuoti
+          imageLayersBase64[idx] = null;
+          loaded++;
+          if (loaded === toLoad) {
+            imgUploadModal.style.display = "none";
+            resetImgUploadModal();
+            // Rimuovi eventuali null
+            imageLayersBase64 = imageLayersBase64.filter(x => x);
+          }
+          return;
+        }
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const url = e.target.result;
+          const div = document.createElement("div");
+          div.className = "bg-image";
+          div.style.backgroundImage = `url('${url}')`;
+          div.style.zIndex = 2 + idx;
+          imageContainer.appendChild(div);
+          imageLayersBase64[idx] = url;
+          loaded++;
+          if (loaded === toLoad) {
+            imgUploadModal.style.display = "none";
+            resetImgUploadModal();
+            // Rimuovi eventuali null
+            imageLayersBase64 = imageLayersBase64.filter(x => x);
+          }
+        };
+        reader.onerror = function () {
+          imgUploadError.textContent = `Errore caricamento immagine layer ${idx + 1}`;
+          imgUploadError.style.display = "block";
+          imageLayersBase64[idx] = null;
+          loaded++;
+          if (loaded === toLoad) {
+            imgUploadModal.style.display = "none";
+            resetImgUploadModal();
+            imageLayersBase64 = imageLayersBase64.filter(x => x);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  }
 });
 
 document.addEventListener("mousemove", function (e) {
@@ -320,7 +409,7 @@ exportBtn.addEventListener("click", function () {
 });
 
 exportAllBtn.addEventListener("click", function () {
-  const database = debugDots.map((d, idx) => {
+  const celle = debugDots.map((d, idx) => {
     const perc = getPercentCoords(d.x, d.y);
     let domande = [];
     if (questionsData[idx] && Array.isArray(questionsData[idx].domande)) {
@@ -337,7 +426,11 @@ exportAllBtn.addEventListener("click", function () {
       domande: domande,
     };
   });
-  const js = "let database = " + JSON.stringify(database, null, 2) + ";";
+  const exportObj = {
+    celle: celle,
+    layers: imageLayersBase64.slice()
+  };
+  const js = "let settings = " + JSON.stringify(exportObj, null, 2) + ";";
   const blob = new Blob([js], { type: "application/javascript" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -545,3 +638,38 @@ function getPixelCoords(xPerc, yPerc) {
     y: (yPerc / 100) * rect.height
   };
 }
+
+uploadImgBtn.addEventListener("click", function () {
+  imgUploadError.style.display = "none";
+  imgUploadError.textContent = "";
+  const files = Array.from(imgFileInput.files);
+  if (!files.length) {
+    imgUploadError.textContent = "Seleziona almeno un'immagine.";
+    imgUploadError.style.display = "block";
+    return;
+  }
+  // Carica tutte le immagini in ordine
+  const imageContainer = document.querySelector(".image-container");
+  let loaded = 0;
+  files.forEach((file, idx) => {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const url = e.target.result;
+      const div = document.createElement("div");
+      div.className = "bg-image";
+      div.style.backgroundImage = `url('${url}')`;
+      div.style.zIndex = 2 + idx; // z-index progressivo
+      imageContainer.appendChild(div);
+      loaded++;
+      if (loaded === files.length) {
+        imgUploadModal.style.display = "none";
+        imgFileInput.value = "";
+      }
+    };
+    reader.onerror = function () {
+      imgUploadError.textContent = `Errore caricamento immagine ${file.name}`;
+      imgUploadError.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  });
+});
