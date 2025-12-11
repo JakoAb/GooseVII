@@ -69,6 +69,32 @@ window.addEventListener("DOMContentLoaded", function () {
     input.accept = "image/*";
     input.style = "flex:1;";
     input.setAttribute("data-layer-idx", idx);
+    const errorSpan = document.createElement("span");
+    errorSpan.style = "color:red; font-size:0.9em; margin-left:4px;";
+    errorSpan.className = "img-dim-error";
+    errorSpan.textContent = "";
+    input.addEventListener("change", function () {
+      errorSpan.textContent = "";
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = function () {
+        if (img.width !== 1920 || img.height !== 1080) {
+          errorSpan.textContent = "L'immagine deve essere 1920x1080";
+          input.value = "";
+        } else {
+          errorSpan.textContent = "";
+        }
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = function () {
+        errorSpan.textContent = "File non valido";
+        input.value = "";
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    });
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.textContent = "x";
@@ -79,6 +105,7 @@ window.addEventListener("DOMContentLoaded", function () {
     };
     card.appendChild(input);
     card.appendChild(removeBtn);
+    card.appendChild(errorSpan);
     return card;
   }
 
