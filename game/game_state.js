@@ -1,7 +1,7 @@
 var currentGameTurn = 0;
 var playerTurns = [];
 var currentPlayerIndex = 0;
-var turnState = ['THROW','MOVE','CHECK_FOOT','END_TURN'];
+var turnState = ['THROW','MOVE','CHECK_CELL','BONUS_STEP','END_TURN'];
 var currentTurnState = 0;
 
 var playerNames = [];

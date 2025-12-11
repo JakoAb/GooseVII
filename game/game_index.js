@@ -25,11 +25,6 @@ function loadSettings(settings) {
 
 function loadState(celle) {
   setBoardState(celle);
-  celle.forEach(cellaObj => {
-    if (cellaObj && typeof cellaObj.cella !== 'undefined' && cellaObj.posizione) {
-      console.log(`${cellaObj.cella} | ${cellaObj.posizione.x},${cellaObj.posizione.y}`);
-    }
-  });
 }
 
 function dropPlayerPieces(numPlayers){
