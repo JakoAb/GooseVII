@@ -47,21 +47,6 @@ body {
   pointer-events: none;
   transform: translateX(-50%); /* Shift left by 50% of its width to center */
 }
-#map-background {
-  background-image: url("../assets/back_celle.png");
-  z-index: 0;
-}
-#map {
-  background-image: url("../assets/map.png");
-  z-index: 1;
-  user-select: none;
-  cursor: grab;
-  will-change: transform;
-  pointer-events: auto;
-}
-#map.zooming {
-  cursor: grabbing;
-}
 .blur-overlay {
   pointer-events: none;
   position: absolute;
