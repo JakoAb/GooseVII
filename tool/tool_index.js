@@ -46,26 +46,11 @@ const closeQuestionsModalBtn = document.getElementById("close-questions-modal");
 const exportAllBtn = document.getElementById("export-all-btn");
 const imageContainer = document.querySelector(".image-container");
 
-function setTransform() {
-  //mainContainer.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
-}
-
-function centerMap() {
-  // Centra la "mappa" (div) nel contenitore
-  const containerRect = mainContent.getBoundingClientRect();
-  const mapRect = map.getBoundingClientRect();
-  // Usa la dimensione del contenitore per centrare la mappa
-  originX = (containerRect.width - mapRect.width) / 2;
-  originY = (containerRect.height - mapRect.height) / 2;
-  setTransform();
-}
-
 document.addEventListener("mousemove", function (e) {});
 document.addEventListener("mouseup", function () {});
 
 // Non c'è più evento load, centra la mappa al DOMContentLoaded
 window.addEventListener("DOMContentLoaded", function () {
-  centerMap();
   const imgUploadModal = document.getElementById("img-upload-modal");
   const imgUploadCardsContainer = document.getElementById("img-upload-cards-container");
   const addImgUploadCardBtn = document.getElementById("add-img-upload-card");
@@ -183,37 +168,6 @@ window.addEventListener("DOMContentLoaded", function () {
       });
     });
   }
-});
-
-map.addEventListener("wheel", function (e) {
-  if (!isZoomActive) return;
-  e.preventDefault();
-  const rect = map.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-  const prevScale = scale;
-  if (e.deltaY < 0) {
-    scale = Math.min(maxScale, scale + 0.1);
-  } else {
-    scale = Math.max(minScale, scale - 0.1);
-  }
-  // Zoom centrato sul punto del mouse
-  originX -= mouseX / prevScale - mouseX / scale;
-  originY -= mouseY / prevScale - mouseY / scale;
-  setTransform();
-  if (scale === 1) {
-    centerMap();
-  }
-});
-
-map.addEventListener("mousedown", function (e) {
-  if (scale === 1) return;
-  isDragging = true;
-  map.classList.add("zooming");
-  startX = e.clientX;
-  startY = e.clientY;
-  lastX = originX;
-  lastY = originY;
 });
 
 document.addEventListener("mousemove", function (e) {
