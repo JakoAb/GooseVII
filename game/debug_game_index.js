@@ -1,7 +1,7 @@
 const nexPlayerBtn = document.getElementById("next-player-btn");
 const nexStateBtn = document.getElementById("next-state-btn");
 const stepGameStateBtn = document.getElementById("step-game-state-btn");
-
+var stepAnimationInProgress = false;
 
 nexPlayerBtn.addEventListener("click", () => {
     console.log("Next Player: "+advanceToNextPlayer());
@@ -16,6 +16,8 @@ stepGameStateBtn.addEventListener("click", () => {
 });
 
 function newStep(){
+    if(stepAnimationInProgress)return;
+    
     console.log(advanceGameState());
     var state = getCurrentTurnState();
 
@@ -31,27 +33,35 @@ function rollDice(){
     return Math.floor(Math.random() * 6) + 1;
 }
 
-async function movePieceToPosition(playerId,roll){
+async function movePieceToPositionWithStep(playerId, roll) {
+    stepAnimationInProgress = true;
+
     for (let i = 0; i < roll; i++) {
-		const cellNumber = getPlayerPosition(playerId);
-        setPlayerPosition(getCurrentPlayer(), (getPlayerPosition(getCurrentPlayer())+1));
-		await takeStep(playerId,cellNumber);
+        const cellNumber = getPlayerPosition(playerId);
+        setPlayerPosition(playerId, cellNumber + 1);
+        takeStep(playerId, cellNumber + 1);
+        await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 secondi di attesa
     }
+
+    stepAnimationInProgress = false;
 }
 
-async function takeStep(playerId,cellNumber){
-	// Recupera la posizione della cella dalla mappa boardState
-        if (typeof boardState !== 'undefined' && boardState.has(cellNumber)) {
-            const pos = boardState.get(cellNumber);
-            const mainContent = document.getElementById('main-content');
-            const rect = mainContent.getBoundingClientRect();
-            const xPx = (pos.x / 100) * rect.width;
-            const yPx = (pos.y / 100) * rect.height;
-            // Trova il pin del giocatore
-            const pin = document.getElementById(playerId);
-            if (pin) {
-                pin.style.left = (xPx - 16) + 'px';
-                pin.style.top = (yPx - 32) + 'px';
-            }
+function takeStep(playerId,cellNumber){
+    // Recupera la posizione della cella dalla mappa boardState
+    if (typeof boardState !== 'undefined' && boardState.has(cellNumber)) {
+        const pos = boardState.get(cellNumber);
+        const mainContent = document.getElementById('main-content');
+        const rect = mainContent.getBoundingClientRect();
+        const xPx = (pos.x / 100) * rect.width;
+        const yPx = (pos.y / 100) * rect.height;
+        // Trova il pin del giocatore
+        const pin = document.getElementById(playerId);
+        if (pin) {
+            // Centra il pin rispetto alla cella
+            const pinWidth = pin.offsetWidth || 32;
+            const pinHeight = pin.offsetHeight || 32;
+            pin.style.left = (xPx - pinWidth/3) + 'px';
+            pin.style.top = (yPx - pinHeight*2) + 'px';
         }
+    }
 }
