@@ -23,7 +23,7 @@ function newStep(){
         var roll = rollDice();
         console.log(getCurrentPlayerName()+" lancia un "+roll);
         console.log("avanza dalla cella "+getPlayerPosition(getCurrentPlayer())+" alla cella "+(getPlayerPosition(getCurrentPlayer())+roll));
-        movePieceToPosition(getCurrentPlayer(),roll);
+        movePieceToPositionWithStep(getCurrentPlayer(),roll);
     }
 }
 
@@ -31,13 +31,16 @@ function rollDice(){
     return Math.floor(Math.random() * 6) + 1;
 }
 
-function movePieceToPosition(playerId,roll){
-    const cellNumber = getPlayerPosition(playerId);
-
+async function movePieceToPosition(playerId,roll){
     for (let i = 0; i < roll; i++) {
+		const cellNumber = getPlayerPosition(playerId);
         setPlayerPosition(getCurrentPlayer(), (getPlayerPosition(getCurrentPlayer())+1));
+		await takeStep(playerId,cellNumber);
+    }
+}
 
-        // Recupera la posizione della cella dalla mappa boardState
+async function takeStep(playerId,cellNumber){
+	// Recupera la posizione della cella dalla mappa boardState
         if (typeof boardState !== 'undefined' && boardState.has(cellNumber)) {
             const pos = boardState.get(cellNumber);
             const mainContent = document.getElementById('main-content');
@@ -51,5 +54,4 @@ function movePieceToPosition(playerId,roll){
                 pin.style.top = (yPx - 32) + 'px';
             }
         }
-    }
 }
