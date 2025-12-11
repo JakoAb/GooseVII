@@ -15,14 +15,27 @@ stepGameStateBtn.addEventListener("click", () => {
     newStep();
 });
 
+function showDiceResult(roll) {
+    const box = document.getElementById('dice-result-box');
+    const valueSpan = document.getElementById('dice-result-value');
+    if (box && valueSpan) {
+        valueSpan.textContent = roll;
+        box.style.display = 'block';
+        setTimeout(() => {
+            box.style.display = 'none';
+        }, 1500);
+    }
+}
+
 function newStep(){
     if(stepAnimationInProgress)return;
-    
+
     console.log(advanceGameState());
     var state = getCurrentTurnState();
 
     if(state === 'THROW'){
         var roll = rollDice();
+        showDiceResult(roll);
         console.log(getCurrentPlayerName()+" lancia un "+roll);
         console.log("avanza dalla cella "+getPlayerPosition(getCurrentPlayer())+" alla cella "+(getPlayerPosition(getCurrentPlayer())+roll));
         movePieceToPositionWithStep(getCurrentPlayer(),roll);
