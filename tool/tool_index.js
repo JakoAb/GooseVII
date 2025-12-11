@@ -277,10 +277,10 @@ loadJsonPointsBtn.addEventListener("click", function () {
       points.forEach((p, i) => {
         if (typeof p.x !== "number" || typeof p.y !== "number")
           throw new Error("Ogni punto deve avere x e y numerici.");
-        addDebugDot(mainContent, debugDots, p.x, p.y, p.cella ?? i + 1);
+        const px = getPixelCoords(p.x, p.y);
+        addDebugDot(mainContent, debugDots, px.x, px.y, p.cella ?? i + 1);
       });
       importModal.style.display = "none";
-      // Messaggio di caricamento rimosso
     } catch (err) {
       importErrorDiv.textContent = "Errore: " + err.message;
       importErrorDiv.style.display = "block";
@@ -297,11 +297,14 @@ closeQuestionsModalBtn.addEventListener("click", function () {
 });
 
 exportBtn.addEventListener("click", function () {
-  const points = debugDots.map((d) => ({
-    cella: d.cella,
-    x: Math.round(d.x),
-    y: Math.round(d.y),
-  }));
+  const points = debugDots.map((d) => {
+    const perc = getPercentCoords(d.x, d.y);
+    return {
+      cella: d.cella,
+      x: perc.x,
+      y: perc.y
+    };
+  });
   const json = JSON.stringify(points, null, 2);
   const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -317,9 +320,8 @@ exportBtn.addEventListener("click", function () {
 });
 
 exportAllBtn.addEventListener("click", function () {
-  // Costruisci la struttura richiesta
   const database = debugDots.map((d, idx) => {
-    // Trova le domande associate a questa cella
+    const perc = getPercentCoords(d.x, d.y);
     const q = questionsData[idx] || {};
     let domande = [];
     if (q.domanda && q.rispostaCorretta) {
@@ -331,14 +333,12 @@ exportAllBtn.addEventListener("click", function () {
         ),
       });
     }
-    // Se ci sono più domande, puoi estendere qui
     return {
       cella: d.cella,
-      posizione: { x: Math.round(d.x), y: Math.round(d.y) },
+      posizione: { x: perc.x, y: perc.y },
       domande: domande,
     };
   });
-  // Genera il JS
   const js = "let database = " + JSON.stringify(database, null, 2) + ";";
   const blob = new Blob([js], { type: "application/javascript" });
   const url = URL.createObjectURL(blob);
@@ -533,3 +533,17 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
+function getPercentCoords(x, y) {
+  const rect = mainContent.getBoundingClientRect();
+  return {
+    x: Math.round((x / rect.width) * 10000) / 100, // due decimali
+    y: Math.round((y / rect.height) * 10000) / 100
+  };
+}
+function getPixelCoords(xPerc, yPerc) {
+  const rect = mainContent.getBoundingClientRect();
+  return {
+    x: (xPerc / 100) * rect.width,
+    y: (yPerc / 100) * rect.height
+  };
+}
