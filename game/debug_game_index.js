@@ -1,43 +1,53 @@
-const nexPlayerBtn = document.getElementById("next-player-btn");
-const nexStateBtn = document.getElementById("next-state-btn");
+// === CONFIGURAZIONE TEMPI DI ATTESA E ANIMAZIONI ===
+// Durata animazione movimento pedina (ms)
+const DURATA_ANIMAZIONE_MOVIMENTO = 500;
+// Attesa dopo movimento prima di check cell (ms)
+const ATTESA_POST_MOVIMENTO = 200;
+// Attesa dopo check cell senza domande (ms)
+const ATTESA_POST_CHECK_CELL = 200;
+// Attesa dopo risposta bonus step (ms)
+const ATTESA_POST_BONUS_STEP = 200;
+// Attesa dopo end turn (ms)
+const ATTESA_POST_END_TURN = 200;
+// Attesa tra step MOVE e CHECK_CELL (ms)
+const ATTESA_MOVE_TO_CHECK_CELL = 200;
+// Attesa tra click risposta e bonus step (ms)
+const ATTESA_RISPOSTA_TO_BONUS_STEP = 200;
+// Attesa tra bonus step e end turn (ms)
+const ATTESA_BONUS_TO_END_TURN = 200;
+// Durata animazione dado (ms)
+const DURATA_ANIMAZIONE_DADO = 800;
+// Attesa dopo estrazione dado prima di chiudere box (ms)
+const ATTESA_POST_DADO = 500;
+// Durata countdown inizio partita (s)
+const DURATA_COUNTDOWN_START = 3;
+
 const stepGameStateBtn = document.getElementById("step-game-state-btn");
 var stepAnimationInProgress = false;
 var diceFaces = 6;
 var lastDiceRoll = 0;
 var lastBonusSteps = 0;
 
-nexPlayerBtn.addEventListener("click", () => {
-    console.log("Next Player: "+advanceToNextPlayer());
-});
-
-nexStateBtn.addEventListener("click", () => {
-    console.log("New State: "+advanceTurnState());
-});
-
 stepGameStateBtn.addEventListener("click", () => {
-    newStep();
-});
-
-function showDiceResult(roll) {
-    const box = document.getElementById('dice-result-box');
-    const valueSpan = document.getElementById('dice-result-value');
-    if (box && valueSpan) {
-        valueSpan.textContent = roll;
-        box.style.display = 'block';
-        setTimeout(() => {
-            box.style.display = 'none';
-        }, 1500);
+    if(currentGameTurn == 0){
+        startGame();
+    }else{
+        newStep();
     }
-}
+
+});
 
 function newStep(){
-    if(stepAnimationInProgress)return;
-    advanceGameState()
+    updateStepIndicator();
+    advanceGameState();
     resolveGameStateStep(getCurrentPlayer(), getCurrentTurnState());
 }
 
 function resolveGameStateStep(playerId, state){
     switch (state){
+        case 'START_TURN_THROW':
+            resolveStartTurn(playerId);
+            break;
         case 'THROW':
             resolveThrow(playerId);
             break;
@@ -59,17 +69,116 @@ function resolveGameStateStep(playerId, state){
     }
 }
 
-function resolveThrow(playerId){
+function resolveStartTurn(playerId) {
+    // Mostra un box colorato con il nome del giocatore e il dado
+    let box = document.getElementById('turno-giocatore-box');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'turno-giocatore-box';
+        box.className = 'turno-giocatore-box';
+        box.style.position = 'fixed';
+        box.style.top = '50%';
+        box.style.left = '50%';
+        box.style.transform = 'translate(-50%, -50%)';
+        box.style.zIndex = '11000';
+        box.style.padding = '32px 64px';
+        box.style.fontSize = '2.2em';
+        box.style.fontWeight = 'bold';
+        box.style.borderRadius = '18px';
+        box.style.color = '#fff';
+        box.style.textAlign = 'center';
+        box.style.cursor = 'pointer';
+        box.style.display = 'flex';
+        box.style.flexDirection = 'column';
+        box.style.alignItems = 'center';
+        document.body.appendChild(box);
+    }
+    box.className = 'turno-giocatore-box';
+    let color = getCurrentPlayerColor();
+    box.style.background = color;
+    // Calcola una versione scurita del colore per la shadow
+    function darkenColor(hex, percent) {
+        let c = hex.replace('#', '');
+        if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+        let num = parseInt(c, 16);
+        let r = Math.max(0, (num >> 16) - 255 * percent);
+        let g = Math.max(0, ((num >> 8) & 0x00FF) - 255 * percent);
+        let b = Math.max(0, (num & 0x0000FF) - 255 * percent);
+        return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+    }
+    const shadowColor = darkenColor(color, 0.25);
+    box.style.boxShadow = `8px 8px 0px 0px ${shadowColor}`;
+    let nome = getCurrentPlayerName ? getCurrentPlayerName() : '';
+    box.innerHTML = '';
+    // Titolo turno
+    const title = document.createElement('div');
+    title.textContent = 'Turno di ' + nome;
+    title.style.marginBottom = '18px';
+    box.appendChild(title);
+    // Box dado
+    const diceBox = document.createElement('div');
+    diceBox.id = 'dice-result-value';
+    diceBox.style.fontSize = '2.5em';
+    diceBox.style.background = 'rgba(255,255,255,0.18)';
+    diceBox.style.borderRadius = '12px';
+    diceBox.style.padding = '18px 36px';
+    diceBox.style.marginBottom = '10px';
+    diceBox.style.userSelect = 'none';
+    box.appendChild(diceBox);
+    // Animazione dado
+    box.setAttribute('data-rolling', 'true');
+    let current = 1;
+    let interval = setInterval(() => {
+        diceBox.textContent = current;
+        current = current % diceFaces + 1;
+    }, 60);
+    // Effetto pressione
+    box.onmousedown = function() {
+        box.classList.add('pressed');
+    };
+    box.onmouseup = function() {
+        box.classList.remove('pressed');
+    };
+    box.onmouseleave = function() {
+        box.classList.remove('pressed');
+    };
+    // Click per avanzare
+    box.onclick = function(e) {
+        if (box.getAttribute('data-rolling') === 'false') return;
+        // Ferma animazione
+        clearInterval(interval);
+        // Estrai il risultato
         lastDiceRoll = rollDice();
-        showDiceResult(lastDiceRoll);
-        console.log(getCurrentPlayerName()+" lancia un "+lastDiceRoll);
+        diceBox.textContent = lastDiceRoll;
+        box.setAttribute('data-rolling', 'false');
+        // Dopo 0.8s nascondi il box e passa allo step successivo
+        setTimeout(() => {
+            box.style.display = 'none';
+            newStep();
+        }, ATTESA_POST_DADO);
+    };
+    // Mostra il box
+    box.style.display = 'flex';
+    console.log(getCurrentPlayerName()+" inizia il turno.");
 }
 
-function resolveMove(playerId,roll){
+function resolveThrow(playerId){
+    // Il dado è già stato animato e il risultato è già stato estratto in resolveStartTurn
+    // Quindi qui non serve più animare o mostrare nulla
+    console.log(getCurrentPlayerName()+" lancia un "+lastDiceRoll);
+}
+
+function resolveMove(playerId, roll) {
     var cellNumber = getPlayerPosition(playerId);
-    console.log(playerId+" avanza alla cella "+(cellNumber+roll));
-    movePieceToPositionWithStep(playerId,roll);
-    lastDiceRoll = 0;
+    console.log(playerId + " avanza alla cella " + (cellNumber + roll));
+    // Esegui l'animazione di movimento e solo dopo passa a CHECK_CELL
+    movePieceToPositionWithStep(playerId, roll).then(() => {
+        lastDiceRoll = 0;
+        // Dopo che l'animazione è conclusa, attendi 0.5s e poi passa a CHECK_CELL
+        setTimeout(() => {
+            newStep();
+        }, ATTESA_POST_MOVIMENTO);
+    });
 }
 
 function resolveCheckCell(playerId){
@@ -81,6 +190,10 @@ function resolveCheckCell(playerId){
         visualizzaDomanda(playerId, domandaEstratta);
     }else{
         console.log("Nessuna domanda per la cella "+cellNumber);
+        // Se non ci sono domande, passa automaticamente allo step successivo dopo 0.5s
+        setTimeout(() => {
+            newStep();
+        }, ATTESA_POST_CHECK_CELL);
     }
 }
 
@@ -142,7 +255,8 @@ function visualizzaDomanda(playerId, domanda) {
         btn.onclick = () => {
             modal.style.display = 'none';
             lastBonusSteps = r.isCorrect ? 1 : 0;
-            newStep();
+            // Risolvi solo BONUS_STEP, che farà avanzare lo stato
+            resolveBonusStep(playerId);
         };
         box.appendChild(btn);
     });
@@ -152,15 +266,30 @@ function visualizzaDomanda(playerId, domanda) {
 }
 
 function resolveBonusStep(playerId){
-    resolveMove(playerId,lastBonusSteps);
-    lastBonusSteps = 0;
+    // Esegui il movimento bonus e solo dopo passa allo step successivo
+    movePieceToPositionWithStep(playerId, lastBonusSteps).then(() => {
+        lastBonusSteps = 0;
+        // Dopo che l'animazione è conclusa, attendi 0.5s e poi passa a END_TURN tramite newStep
+        setTimeout(() => {
+            newStep();
+        }, ATTESA_POST_BONUS_STEP);
+    });
 }
 
 function resolveEndTurn(playerId){
     console.log(getCurrentPlayerName()+" termina il turno.");
-    newStep();
+    // Dopo 0.5s passa automaticamente al prossimo step (nuovo turno)
+    setTimeout(() => {
+        newStep();
+    }, ATTESA_POST_END_TURN);
 }
 
+
+// Rimuovi il box dado separato dalla pagina HTML
+const diceResultBox = document.getElementById('dice-result-box');
+if (diceResultBox) {
+    diceResultBox.parentNode.removeChild(diceResultBox);
+}
 
 function rollDice(){
     return Math.floor(Math.random() * diceFaces) + 1;
@@ -173,7 +302,7 @@ async function movePieceToPositionWithStep(playerId, roll) {
         const cellNumber = getPlayerPosition(playerId);
         setPlayerPosition(playerId, cellNumber + 1);
         takeStep(playerId, cellNumber + 1);
-        await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 secondi di attesa
+        await new Promise(resolve => setTimeout(resolve, DURATA_ANIMAZIONE_MOVIMENTO)); // 0.5 secondi di attesa
     }
 
     stepAnimationInProgress = false;
@@ -193,8 +322,44 @@ function takeStep(playerId,cellNumber){
             // Centra il pin rispetto alla cella
             const pinWidth = pin.offsetWidth || 32;
             const pinHeight = pin.offsetHeight || 32;
-            pin.style.left = (xPx - pinWidth/3) + 'px';
-            pin.style.top = (yPx - pinHeight*2) + 'px';
+            pin.style.left = (xPx - pinWidth/2) + 'px';
+            pin.style.top = (yPx - pinHeight/2) + 'px';
         }
     }
 }
+
+// Aggiorna o crea il box dello stato corrente in basso a sinistra
+function updateStepIndicator() {
+    let indicator = document.getElementById('step-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'step-indicator';
+        indicator.style.position = 'fixed';
+        indicator.style.left = '16px';
+        indicator.style.bottom = '16px';
+        indicator.style.background = 'rgba(30,30,30,0.92)';
+        indicator.style.color = '#fff';
+        indicator.style.padding = '10px 18px';
+        indicator.style.borderRadius = '10px';
+        indicator.style.fontSize = '1.1em';
+        indicator.style.zIndex = '9999';
+        indicator.style.boxShadow = '0 2px 8px rgba(0,0,0,0.18)';
+        document.body.appendChild(indicator);
+    }
+    let player = getCurrentPlayerName ? getCurrentPlayerName() : '';
+    let state = getCurrentTurnState ? getCurrentTurnState() : '';
+    indicator.textContent = `Turno: ${player} | Stato: ${state}`;
+}
+
+// Richiama updateStepIndicator ogni volta che cambia lo stato
+const originalAdvanceGameState = typeof advanceGameState === 'function' ? advanceGameState : null;
+function advanceGameStateWithIndicator() {
+    if (originalAdvanceGameState) originalAdvanceGameState();
+    updateStepIndicator();
+}
+
+// Sostituisci advanceGameState con la versione che aggiorna l'indicatore
+advanceGameState = advanceGameStateWithIndicator;
+
+// Aggiorna subito all'avvio
+updateStepIndicator();

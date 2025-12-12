@@ -1,10 +1,11 @@
 var currentGameTurn = 0;
 var playerTurns = [];
 var currentPlayerIndex = 0;
-var turnState = ['THROW','MOVE','CHECK_CELL','BONUS_STEP','END_TURN'];
+var turnState = ['START_TURN_THROW','MOVE','CHECK_CELL','BONUS_STEP','END_TURN'];
 var currentTurnState = 0;
 
 var playerNames = [];
+var playerColors = [];
 
 function getCurrentPlayer(){
     return playerTurns[currentPlayerIndex];
@@ -12,6 +13,10 @@ function getCurrentPlayer(){
 
 function getCurrentPlayerName(){
     return playerNames[currentPlayerIndex];
+}
+
+function getCurrentPlayerColor(){
+    return playerColors[currentPlayerIndex];
 }
 
 function getCurrentTurnState(){
@@ -44,6 +49,16 @@ function advanceGameState(){
         advanceTurnState();
     }
     return currentGameTurn + ' | ' + playerTurns[currentPlayerIndex] + ' | '+turnState[currentTurnState];
+}
+
+function startGame(){
+    currentGameTurn = 1;
+    currentPlayerIndex = 0;
+    currentTurnState = 0;
+    resolveGameStateStep(getCurrentPlayer(), getCurrentTurnState());
+}
+
+function endGame(){
 }
 
 

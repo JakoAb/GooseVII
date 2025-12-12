@@ -6,9 +6,7 @@
     <link rel="stylesheet" href="game_index.css" />
 </head>
 <body>
-    <div id="debug-bar">
-        <button id="next-player-btn">Prossimo giocatore</button>
-        <button id="next-state-btn">Prossimo stato</button>
+    <div id="debug-bar" style="display: none;">
         <button id="step-game-state-btn">Prossimo stato</button>
     </div>
 
@@ -27,6 +25,16 @@
         <div class="blur-right"></div>
     </div>
 </div>
+
+<div id="start-game-overlay" class="start-game-overlay">
+  <div class="start-game-box">
+    <div id="start-game-players-row" class="start-game-players-row" style="overflow-x: auto;">
+      <!-- Le card giocatore saranno generate da JS -->
+    </div>
+    <button id="start-game-btn" class="start-game-btn" disabled>Inizia</button>
+  </div>
+</div>
+
     <script type="text/javascript" src="game_index.js"></script>
     <script type="text/javascript" src="settings/settings.js"></script>
     <script type="text/javascript" src="game_state.js"></script>

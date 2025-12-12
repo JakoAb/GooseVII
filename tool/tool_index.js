@@ -69,32 +69,6 @@ window.addEventListener("DOMContentLoaded", function () {
     input.accept = "image/*";
     input.style = "flex:1;";
     input.setAttribute("data-layer-idx", idx);
-    const errorSpan = document.createElement("span");
-    errorSpan.style = "color:red; font-size:0.9em; margin-left:4px;";
-    errorSpan.className = "img-dim-error";
-    errorSpan.textContent = "";
-    input.addEventListener("change", function () {
-      errorSpan.textContent = "";
-      if (!input.files || !input.files[0]) return;
-      const file = input.files[0];
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = function () {
-        if (img.width !== 1920 || img.height !== 1080) {
-          errorSpan.textContent = "L'immagine deve essere 1920x1080";
-          input.value = "";
-        } else {
-          errorSpan.textContent = "";
-        }
-        URL.revokeObjectURL(url);
-      };
-      img.onerror = function () {
-        errorSpan.textContent = "File non valido";
-        input.value = "";
-        URL.revokeObjectURL(url);
-      };
-      img.src = url;
-    });
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.textContent = "x";
@@ -105,7 +79,6 @@ window.addEventListener("DOMContentLoaded", function () {
     };
     card.appendChild(input);
     card.appendChild(removeBtn);
-    card.appendChild(errorSpan);
     return card;
   }
 
@@ -361,13 +334,6 @@ mainContent.addEventListener("contextmenu", function (e) {
   if (!isPointerMode) return;
   e.preventDefault();
 });
-
-importBtn.addEventListener("click", function () {
-  importModal.style.display = "flex";
-  importErrorDiv.style.display = "none";
-  importErrorDiv.textContent = "";
-  jsonFileInput.value = "";
-});
 closeImportModalBtn.addEventListener("click", function () {
   importModal.style.display = "none";
   importErrorDiv.style.display = "none";
@@ -412,29 +378,6 @@ closeQuestionsModalBtn.addEventListener("click", function () {
   questionsModal.style.display = "none";
 });
 
-exportBtn.addEventListener("click", function () {
-  const points = debugDots.map((d) => {
-    const perc = getPercentCoords(d.x, d.y);
-    return {
-      cella: d.cella,
-      x: perc.x,
-      y: perc.y
-    };
-  });
-  const json = JSON.stringify(points, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "celle.json";
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
-});
-
 exportAllBtn.addEventListener("click", function () {
   const celle = debugDots.map((d, idx) => {
     const perc = getPercentCoords(d.x, d.y);
@@ -457,7 +400,7 @@ exportAllBtn.addEventListener("click", function () {
     celle: celle,
     layers: imageLayersBase64.slice()
   };
-  const js = "let settings = " + JSON.stringify(exportObj, null, 2) + ";";
+  const js = "var settings = " + JSON.stringify(exportObj, null, 2) + ";";
   const blob = new Blob([js], { type: "application/javascript" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -700,3 +643,70 @@ uploadImgBtn.addEventListener("click", function () {
     reader.readAsDataURL(file);
   });
 });
+
+// Gestione importazione tutto
+const importAllBtn = document.getElementById("import-all-btn");
+if (importAllBtn) {
+  importAllBtn.addEventListener("click", function () {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".js";
+    input.style.display = "none";
+    document.body.appendChild(input);
+    input.addEventListener("change", function () {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        let settings = null;
+        try {
+          // Esegue il file JS in sandbox per estrarre la variabile settings
+          const text = ev.target.result;
+          const sandbox = {};
+          (function() { eval(text); Object.assign(sandbox, typeof settings !== 'undefined' ? {settings} : {}); })();
+          if (!sandbox.settings) throw new Error("File non valido: manca la variabile settings");
+          settings = sandbox.settings;
+        } catch (err) {
+          alert("Errore importazione: " + err.message);
+          document.body.removeChild(input);
+          return;
+        }
+        // Valida struttura
+        if (!Array.isArray(settings.celle) || !Array.isArray(settings.layers)) {
+          alert("File non valido: struttura mancante");
+          document.body.removeChild(input);
+          return;
+        }
+        // Svuota punti, domande e immagini
+        removeAllDebugDots(debugDots);
+        questionsData.length = 0;
+        while (imageContainer.firstChild) imageContainer.removeChild(imageContainer.firstChild);
+        imageLayersBase64 = [];
+        // Popola celle e domande
+        settings.celle.forEach((c, idx) => {
+          const pos = getPixelCoords(c.posizione.x, c.posizione.y);
+          addDebugDot(mainContent, debugDots, pos.x, pos.y, c.cella);
+          if (Array.isArray(c.domande)) {
+            questionsData[idx] = { cella: c.cella, posizione: c.posizione, domande: c.domande };
+          } else {
+            questionsData[idx] = { cella: c.cella, posizione: c.posizione, domande: [] };
+          }
+        });
+        // Popola immagini di sfondo
+        settings.layers.forEach((url, idx) => {
+          if (!url) return;
+          const div = document.createElement("div");
+          div.className = "bg-image";
+          div.style.backgroundImage = `url('${url}')`;
+          div.style.zIndex = 2 + idx;
+          imageContainer.appendChild(div);
+          imageLayersBase64[idx] = url;
+        });
+        alert("Importazione completata!");
+        document.body.removeChild(input);
+      };
+      reader.readAsText(file);
+    });
+    input.click();
+  });
+}

@@ -10,7 +10,8 @@
     <div id="main-content">
       <div id="main-container">
         <div class="image-container">
-          <div class="bg-image" style="background-image: url(../assets/x_init.png); z-index: 2;"></div>
+          <div id="map-background" class="bg-image" style="z-index: 0"></div>
+          <div id="map" class="bg-image" style="z-index: 1"></div>
         </div>
 
         <div id="point-container"></div>
@@ -29,13 +30,11 @@
       <button id="toggle-drag" title="Muovi">Muovi</button>
       <button id="toggle-delete" title="Cancella">Cancella</button>
       <button id="clear-points" title="Elimina tutti i punti">Cancella tutte</button>
-      <p class="label-debug">Import/Export celle</p>
-      <button id="import-points" title="Importa punti">Importa da JSON</button>
-      <button id="export-points" title="Esporta punti">Esporta in JSON</button>
       <p class="label-debug">Carica Immagini</p>
-      <button id="load-img-btn" title="Carica immagini">Carica Immagini Sfondo</button>
-      <p class="label-debug">Finalizza scenario</p>
-      <button id="export-all-btn" title="Domande">Esporta tutto</button>
+      <button id="load-img-btn" title="Carica immagini">Carica Immagini</button>
+      <p class="label-debug">Scenario</p>
+      <button id="export-all-btn" title="Export">Esporta tutto</button>
+      <button id="import-all-btn" title="Import">Importa tutto</button>
     </div>
 
     <div
