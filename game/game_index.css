@@ -127,15 +127,3 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     padding: 8px 0;
 }
-.turno-giocatore-box{
-    box-shadow: 60px -16px teal;
-}
-.turno-giocatore-box {
-    /* Box shadow dinamica, verrà aggiornata inline da JS per il colore */
-    transition: transform 0.2s cubic-bezier(.4,2,.6,1);
-    will-change: transform;
-    cursor: pointer;
-}
-.turno-giocatore-box.pressed {
-    transform: translate(8px, 8px);
-}

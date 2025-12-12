@@ -2,7 +2,7 @@ window.addEventListener("DOMContentLoaded", function () {
     if(settings == undefined) {console.error("Settings not found!"); return;}
     loadSettings(settings);
 
-    dropPlayerPieces(4);
+    dropPlayerPieces(1);
 });
 
 function loadSettings(settings) {
@@ -24,6 +24,11 @@ function loadSettings(settings) {
 
 function loadState(celle) {
   setBoardState(celle);
+  celle.forEach(cellaObj => {
+    if (cellaObj && typeof cellaObj.cella !== 'undefined' && cellaObj.posizione) {
+      console.log(`${cellaObj.cella} | ${cellaObj.posizione.x},${cellaObj.posizione.y}`);
+    }
+  });
 }
 
 function dropPlayerPieces(numPlayers){
@@ -33,7 +38,7 @@ function dropPlayerPieces(numPlayers){
   oldPins.forEach(pin => pin.remove());
 
   // Colori predefiniti per i giocatori
-  const playerColorPalette = [
+  const playerColors = [
     '#e53935', // rosso
     '#43a047', // verde
     '#1e88e5', // blu
@@ -65,13 +70,9 @@ function dropPlayerPieces(numPlayers){
     pin.style.width = '32px';
     pin.style.height = '32px';
     pin.style.zIndex = 100 + i;
-    pin.style.backgroundColor= playerColorPalette[i % playerColorPalette.length]; /* colore che vuoi */
-    pin.setAttribute('id','pp-' + (i+1));
+    pin.style.filter = `drop-shadow(0 0 6px ${playerColors[i % playerColors.length]})`;
+    pin.style.background = playerColors[i % playerColors.length];
     pin.setAttribute('data-player', i+1);
     imageContainer.appendChild(pin);
-    playerTurns.push('pp-' + (i+1));
-    playerNames.push('NOME_Giocatore_' + (i+1));
-    playerColors.push(pin.style.backgroundColor);
-    setPlayerPosition('pp-' + (i+1), 0);
   }
 }
