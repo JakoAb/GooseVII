@@ -29,6 +29,7 @@ body {
   background-color: #28212f;
   overflow: hidden;
   position: relative;
+  /* Rimuovi eventuale margin-top, la debug bar non deve spostare il contenuto */
 }
 .image-container {
   position: relative;
@@ -115,4 +116,26 @@ body {
   transition: left 0.5s, top 0.5s;
   pointer-events: auto;
   scale: 1.5;
+}
+#debug-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 8px 0;
+}
+.turno-giocatore-box{
+    box-shadow: 60px -16px teal;
+}
+.turno-giocatore-box {
+    /* Box shadow dinamica, verrà aggiornata inline da JS per il colore */
+    transition: transform 0.2s cubic-bezier(.4,2,.6,1);
+    will-change: transform;
+    cursor: pointer;
+}
+.turno-giocatore-box.pressed {
+    transform: translate(8px, 8px);
 }

@@ -3,7 +3,6 @@ window.addEventListener("DOMContentLoaded", function () {
     loadSettings(settings);
 
     dropPlayerPieces(4);
-    newStep();
 });
 
 function loadSettings(settings) {
@@ -34,7 +33,7 @@ function dropPlayerPieces(numPlayers){
   oldPins.forEach(pin => pin.remove());
 
   // Colori predefiniti per i giocatori
-  const playerColors = [
+  const playerColorPalette = [
     '#e53935', // rosso
     '#43a047', // verde
     '#1e88e5', // blu
@@ -66,12 +65,13 @@ function dropPlayerPieces(numPlayers){
     pin.style.width = '32px';
     pin.style.height = '32px';
     pin.style.zIndex = 100 + i;
-    pin.style.backgroundColor= playerColors[i % playerColors.length]; /* colore che vuoi */
+    pin.style.backgroundColor= playerColorPalette[i % playerColorPalette.length]; /* colore che vuoi */
     pin.setAttribute('id','pp-' + (i+1));
     pin.setAttribute('data-player', i+1);
     imageContainer.appendChild(pin);
     playerTurns.push('pp-' + (i+1));
     playerNames.push('NOME_Giocatore_' + (i+1));
+    playerColors.push(pin.style.backgroundColor);
     setPlayerPosition('pp-' + (i+1), 0);
   }
 }
