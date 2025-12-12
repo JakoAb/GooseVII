@@ -1,3 +1,27 @@
+// === CONFIGURAZIONE TEMPI DI ATTESA E ANIMAZIONI ===
+// Durata animazione movimento pedina (ms)
+const DURATA_ANIMAZIONE_MOVIMENTO = 500;
+// Attesa dopo movimento prima di check cell (ms)
+const ATTESA_POST_MOVIMENTO = 200;
+// Attesa dopo check cell senza domande (ms)
+const ATTESA_POST_CHECK_CELL = 200;
+// Attesa dopo risposta bonus step (ms)
+const ATTESA_POST_BONUS_STEP = 200;
+// Attesa dopo end turn (ms)
+const ATTESA_POST_END_TURN = 200;
+// Attesa tra step MOVE e CHECK_CELL (ms)
+const ATTESA_MOVE_TO_CHECK_CELL = 200;
+// Attesa tra click risposta e bonus step (ms)
+const ATTESA_RISPOSTA_TO_BONUS_STEP = 200;
+// Attesa tra bonus step e end turn (ms)
+const ATTESA_BONUS_TO_END_TURN = 200;
+// Durata animazione dado (ms)
+const DURATA_ANIMAZIONE_DADO = 800;
+// Attesa dopo estrazione dado prima di chiudere box (ms)
+const ATTESA_POST_DADO = 500;
+// Durata countdown inizio partita (s)
+const DURATA_COUNTDOWN_START = 3;
+
 const stepGameStateBtn = document.getElementById("step-game-state-btn");
 var stepAnimationInProgress = false;
 var diceFaces = 6;
@@ -131,7 +155,7 @@ function resolveStartTurn(playerId) {
         setTimeout(() => {
             box.style.display = 'none';
             newStep();
-        }, 800);
+        }, ATTESA_POST_DADO);
     };
     // Mostra il box
     box.style.display = 'flex';
@@ -153,7 +177,7 @@ function resolveMove(playerId, roll) {
         // Dopo che l'animazione è conclusa, attendi 0.5s e poi passa a CHECK_CELL
         setTimeout(() => {
             newStep();
-        }, 500);
+        }, ATTESA_POST_MOVIMENTO);
     });
 }
 
@@ -169,7 +193,7 @@ function resolveCheckCell(playerId){
         // Se non ci sono domande, passa automaticamente allo step successivo dopo 0.5s
         setTimeout(() => {
             newStep();
-        }, 500);
+        }, ATTESA_POST_CHECK_CELL);
     }
 }
 
@@ -248,7 +272,7 @@ function resolveBonusStep(playerId){
         // Dopo che l'animazione è conclusa, attendi 0.5s e poi passa a END_TURN tramite newStep
         setTimeout(() => {
             newStep();
-        }, 500);
+        }, ATTESA_POST_BONUS_STEP);
     });
 }
 
@@ -257,7 +281,7 @@ function resolveEndTurn(playerId){
     // Dopo 0.5s passa automaticamente al prossimo step (nuovo turno)
     setTimeout(() => {
         newStep();
-    }, 500);
+    }, ATTESA_POST_END_TURN);
 }
 
 
@@ -278,7 +302,7 @@ async function movePieceToPositionWithStep(playerId, roll) {
         const cellNumber = getPlayerPosition(playerId);
         setPlayerPosition(playerId, cellNumber + 1);
         takeStep(playerId, cellNumber + 1);
-        await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 secondi di attesa
+        await new Promise(resolve => setTimeout(resolve, DURATA_ANIMAZIONE_MOVIMENTO)); // 0.5 secondi di attesa
     }
 
     stepAnimationInProgress = false;

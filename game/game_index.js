@@ -92,7 +92,7 @@ window.addEventListener("DOMContentLoaded", function () {
       if (typeof playerNames !== 'undefined') names.forEach(n => playerNames.push(n));
       if (typeof playerColors !== 'undefined') colors.forEach(c => playerColors.push(c));
       // Avvia partita con countdown animato
-      let countdown = 5;
+      let countdown = DURATA_COUNTDOWN_START;
       startBtn.disabled = true;
       const originalText = startBtn.textContent;
       startBtn.textContent = `Inizio tra ${countdown}...`;
