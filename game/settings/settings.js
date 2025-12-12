@@ -1,4 +1,4 @@
-let settings = {
+var settings = {
   "celle": [
     {
       "cella": 1,

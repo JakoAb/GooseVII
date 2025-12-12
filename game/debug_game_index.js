@@ -51,6 +51,7 @@ function resolveStartTurn(playerId) {
     if (!box) {
         box = document.createElement('div');
         box.id = 'turno-giocatore-box';
+        box.className = 'turno-giocatore-box';
         box.style.position = 'fixed';
         box.style.top = '50%';
         box.style.left = '50%';
@@ -60,7 +61,6 @@ function resolveStartTurn(playerId) {
         box.style.fontSize = '2.2em';
         box.style.fontWeight = 'bold';
         box.style.borderRadius = '18px';
-        box.style.boxShadow = '0 2px 16px rgba(0,0,0,0.18)';
         box.style.color = '#fff';
         box.style.textAlign = 'center';
         box.style.cursor = 'pointer';
@@ -69,8 +69,21 @@ function resolveStartTurn(playerId) {
         box.style.alignItems = 'center';
         document.body.appendChild(box);
     }
+    box.className = 'turno-giocatore-box';
     let color = getCurrentPlayerColor();
     box.style.background = color;
+    // Calcola una versione scurita del colore per la shadow
+    function darkenColor(hex, percent) {
+        let c = hex.replace('#', '');
+        if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+        let num = parseInt(c, 16);
+        let r = Math.max(0, (num >> 16) - 255 * percent);
+        let g = Math.max(0, ((num >> 8) & 0x00FF) - 255 * percent);
+        let b = Math.max(0, (num & 0x0000FF) - 255 * percent);
+        return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+    }
+    const shadowColor = darkenColor(color, 0.25);
+    box.style.boxShadow = `8px 8px 0px 0px ${shadowColor}`;
     let nome = getCurrentPlayerName ? getCurrentPlayerName() : '';
     box.innerHTML = '';
     // Titolo turno
@@ -95,8 +108,18 @@ function resolveStartTurn(playerId) {
         diceBox.textContent = current;
         current = current % diceFaces + 1;
     }, 60);
+    // Effetto pressione
+    box.onmousedown = function() {
+        box.classList.add('pressed');
+    };
+    box.onmouseup = function() {
+        box.classList.remove('pressed');
+    };
+    box.onmouseleave = function() {
+        box.classList.remove('pressed');
+    };
     // Click per avanzare
-    box.onclick = function() {
+    box.onclick = function(e) {
         if (box.getAttribute('data-rolling') === 'false') return;
         // Ferma animazione
         clearInterval(interval);
