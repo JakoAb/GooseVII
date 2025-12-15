@@ -1,43 +1,16 @@
-// === CONFIGURAZIONE TEMPI DI ATTESA E ANIMAZIONI ===
-// Durata animazione movimento pedina (ms)
-const DURATA_ANIMAZIONE_MOVIMENTO = 500;
-// Attesa dopo movimento prima di check cell (ms)
-const ATTESA_POST_MOVIMENTO = 200;
-// Attesa dopo check cell senza domande (ms)
-const ATTESA_POST_CHECK_CELL = 200;
-// Attesa dopo risposta bonus step (ms)
-const ATTESA_POST_BONUS_STEP = 200;
-// Attesa dopo end turn (ms)
-const ATTESA_POST_END_TURN = 200;
-// Attesa tra step MOVE e CHECK_CELL (ms)
-const ATTESA_MOVE_TO_CHECK_CELL = 200;
-// Attesa tra click risposta e bonus step (ms)
-const ATTESA_RISPOSTA_TO_BONUS_STEP = 200;
-// Attesa tra bonus step e end turn (ms)
-const ATTESA_BONUS_TO_END_TURN = 200;
-// Durata animazione dado (ms)
-const DURATA_ANIMAZIONE_DADO = 800;
-// Attesa dopo estrazione dado prima di chiudere box (ms)
-const ATTESA_POST_DADO = 500;
-// Durata countdown inizio partita (s)
-const DURATA_COUNTDOWN_START = 0;
-
-const stepGameStateBtn = document.getElementById("step-game-state-btn");
+//const stepGameStateBtn = document.getElementById("step-game-state-btn");
 var stepAnimationInProgress = false;
-var diceFaces = 1;
 var lastDiceRoll = 0;
 var lastBonusSteps = 0;
-// Variabile per tenere traccia dei bonus_points della domanda corrente
-let lastBonusPoints = 1;
 
-stepGameStateBtn.addEventListener("click", () => {
-    if(currentGameTurn == 0){
-        startGame();
-    }else{
-        newStep();
-    }
-
-});
+//stepGameStateBtn.addEventListener("click", () => {
+//    if(currentGameTurn == 0){
+//        startGame();
+//    }else{
+//        newStep();
+//    }
+//
+//});
 
 function newStep(){
     updateStepIndicator();
@@ -181,6 +154,17 @@ function resolveStartTurn(playerId) {
     console.log(getCurrentPlayerName()+" inizia il turno.");
 }
 
+// Abilita lancio dado anche con SPAZIO o INVIO
+window.addEventListener('keydown', function(e) {
+    const box = document.getElementById('turno-giocatore-box');
+    if (!box || box.style.display === 'none') return;
+    if (box.getAttribute('data-rolling') !== 'true') return;
+    if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        box.click();
+    }
+});
+
 function resolveThrow(playerId){
     // Il dado è già stato animato e il risultato è già stato estratto in resolveStartTurn
     // Quindi qui non serve più animare o mostrare nulla
@@ -265,7 +249,7 @@ function visualizzaDomanda(playerId, domanda) {
     // IMG personaggio
     const img = document.createElement('img');
     img.id = 'domanda-personaggio-img';
-    img.src = '../assets/schema_personaggio.png';
+    img.src = showArtworkGrid ? '../assets/schema_personaggio.png' : '../assets/personaggio.png';
     img.alt = 'Personaggio';
     img.style.scale = '70%';
     img.style.height = '120px';
@@ -352,8 +336,8 @@ function visualizzaDomanda(playerId, domanda) {
             modal.style.display = 'none';
             if(mainContent) mainContent.classList.remove('blurred-bg');
             // Se la risposta è corretta, assegna il bonus_points, altrimenti 0
-            lastBonusSteps = r.isCorrect ? lastBonusPoints : 0;
-            resolveBonusStep(playerId);
+            lastBonusSteps = r.isCorrect ? (domanda.bonus_points ? domanda.bonus_points : defaultBonusPoints) : wrongAnswerPenality;
+            newStep();
         };
         rightCol.appendChild(btn);
     });
@@ -366,6 +350,7 @@ function visualizzaDomanda(playerId, domanda) {
 }
 
 function resolveBonusStep(playerId){
+    console.log("bonus steps "+lastBonusSteps);
     // Esegui il movimento bonus e solo dopo passa allo step successivo
     movePieceToPositionWithStep(playerId, lastBonusSteps).then(() => {
         lastBonusSteps = 0;
@@ -398,10 +383,13 @@ function rollDice(){
 async function movePieceToPositionWithStep(playerId, roll) {
     stepAnimationInProgress = true;
 
+    const direction = roll >= 0 ? 1 : -1;
+    roll = Math.abs(roll);
+
     for (let i = 0; i < roll; i++) {
         const cellNumber = getPlayerPosition(playerId);
-        setPlayerPosition(playerId, cellNumber + 1);
-        takeStep(playerId, cellNumber + 1);
+        setPlayerPosition(playerId, cellNumber + direction);
+        takeStep(playerId, cellNumber + direction);
         await new Promise(resolve => setTimeout(resolve, DURATA_ANIMAZIONE_MOVIMENTO)); // 0.5 secondi di attesa
     }
 
@@ -448,7 +436,7 @@ function updateStepIndicator() {
     let state = getCurrentTurnState ? getCurrentTurnState() : '';
     let text = `Turno: ${player} | Stato: ${state}`;
     if (state === 'BONUS_STEP') {
-        text += ` | Bonus Points: ${lastBonusPoints}`;
+        text += ` | Bonus Points: ${lastBonusSteps}`;
     }
     indicator.textContent = text;
 }

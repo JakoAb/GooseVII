@@ -43,7 +43,7 @@ var settings = {
           "rispostaCorretta": "2",
           "risposta1": "1",
           "risposta2": "3",
-		  "bonus_points": 3
+		  "bonus_points": 30
         }
       ]
     },

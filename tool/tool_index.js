@@ -406,7 +406,7 @@ exportAllBtn.addEventListener("click", function () {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "game-settings.js";
+  a.download = "content.js";
   document.body.appendChild(a);
   a.click();
   setTimeout(() => {

@@ -1,4 +1,3 @@
-// Mappa globale delle celle
 var boardState = new Map();
 var playerPosition = new Map();
 
