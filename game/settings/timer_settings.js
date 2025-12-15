@@ -21,3 +21,5 @@ const DURATA_ANIMAZIONE_DADO = 800;
 const ATTESA_POST_DADO = 500;
 // Durata countdown inizio partita (s)
 const DURATA_COUNTDOWN_START = 0;
+// Durata animazione pressione tasto di lancio dado(s)
+const DURATA_PRESSIONE_LANCIO = 0.1;

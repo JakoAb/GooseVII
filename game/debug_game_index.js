@@ -99,7 +99,7 @@ function resolveStartTurn(playerId) {
         return inputColor;
     }
     const shadowColor = darkenColor(color, 0.25);
-    box.style.boxShadow = `8px 8px 0px 0px ${shadowColor}`;
+    box.style.boxShadow = `0px 35px 0px 0px ${shadowColor}`;
     let nome = getCurrentPlayerName ? getCurrentPlayerName() : '';
     box.innerHTML = '';
     // Titolo turno
@@ -137,17 +137,24 @@ function resolveStartTurn(playerId) {
     // Click per avanzare
     box.onclick = function(e) {
         if (box.getAttribute('data-rolling') === 'false') return;
-        // Ferma animazione
         clearInterval(interval);
-        // Estrai il risultato
         lastDiceRoll = rollDice();
         diceBox.textContent = lastDiceRoll;
         box.setAttribute('data-rolling', 'false');
-        // Dopo 0.8s nascondi il box e passa allo step successivo
+        // Animazione: sposta top di 10px e riduci la shadow
+        box.style.transition = 'top 0.2s, box-shadow 0.2s';
+        box.style.top = 'calc(50% + 10px)';
+        box.style.boxShadow = `0px 10px 0px 0px ${shadowColor}`;
         setTimeout(() => {
-            box.style.display = 'none';
-            newStep();
-        }, ATTESA_POST_DADO);
+            // Riporta il box alla posizione originale (animato)
+            box.style.top = '50%';
+            box.style.boxShadow = `0px 35px 0px 0px ${shadowColor}`;
+            // Dopo 0.5s nascondi il box e avanza
+            setTimeout(() => {
+                box.style.display = 'none';
+                newStep();
+            }, 500);
+        }, 100);
     };
     // Mostra il box
     box.style.display = 'flex';
@@ -172,6 +179,9 @@ function resolveThrow(playerId){
 }
 
 function resolveMove(playerId, roll) {
+    // Nascondi il turno-giocatore-box se presente
+    let box = document.getElementById('turno-giocatore-box');
+    if (box) box.style.display = 'none';
     var cellNumber = getPlayerPosition(playerId);
     console.log(playerId + " avanza alla cella " + (cellNumber + roll));
     // Esegui l'animazione di movimento e solo dopo passa a CHECK_CELL
@@ -268,7 +278,7 @@ function visualizzaDomanda(playerId, domanda) {
     domandaBox.style.transform = 'translate(-50%, -50%)';
     domandaBox.style.background = 'rgba(245,245,245,0.92)';
     domandaBox.style.borderRadius = '18px';
-    domandaBox.style.boxShadow = '0 2px 32px rgba(0,0,0,0.18)';
+    domandaBox.style.boxShadow = 'none';
     domandaBox.style.padding = '32px 48px';
     domandaBox.style.minWidth = '320px';
     domandaBox.style.maxWidth = '600px';
@@ -322,16 +332,31 @@ function visualizzaDomanda(playerId, domanda) {
         btn.style.fontSize = '1.35em';
         btn.style.fontWeight = 'bold';
         btn.style.borderRadius = '16px';
-        btn.style.border = '2px solid #888';
-        btn.style.background = '#fff';
+        btn.style.border = 'none';
+        btn.style.background = 'rgb(192,192,192)'; // grigio 25% più scuro del bianco
         btn.style.color = '#222';
         btn.style.cursor = 'pointer';
-        btn.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
-        btn.style.transition = 'background 0.18s, color 0.18s';
+        btn.style.boxShadow = 'none';
+        btn.style.transition = 'background 0.18s, color 0.18s, transform 0.18s';
         btn.style.width = '550px';
         btn.style.textAlign = 'center';
-        btn.onmouseover = () => { btn.style.background = '#fbc02d'; btn.style.color = '#222'; };
-        btn.onmouseout = () => { btn.style.background = '#fff'; btn.style.color = '#222'; };
+        // Effetto pressione su hover/click
+        btn.onmouseover = () => {
+            btn.style.background = 'rgb(160,160,160)';
+            btn.style.color = '#222';
+            btn.style.transform = 'translateY(10px)';
+        };
+        btn.onmouseout = () => {
+            btn.style.background = 'rgb(192,192,192)';
+            btn.style.color = '#222';
+            btn.style.transform = 'none';
+        };
+        btn.onmousedown = () => {
+            btn.style.transform = 'translateY(18px)';
+        };
+        btn.onmouseup = () => {
+            btn.style.transform = 'translateY(10px)';
+        };
         btn.onclick = () => {
             modal.style.display = 'none';
             if(mainContent) mainContent.classList.remove('blurred-bg');
@@ -396,20 +421,54 @@ async function movePieceToPositionWithStep(playerId, roll) {
     stepAnimationInProgress = false;
 }
 
-function takeStep(playerId,cellNumber){
+function takeStep(playerId, cellNumber) {
     // Recupera la posizione della cella dalla mappa boardState
     if (typeof boardState !== 'undefined' && boardState.has(cellNumber)) {
         const pos = boardState.get(cellNumber);
         const mainContent = document.getElementById('main-content');
         const rect = mainContent.getBoundingClientRect();
-        const xPx = (pos.x / 100) * rect.width;
-        const yPx = (pos.y / 100) * rect.height;
-        // Trova il pinWrapper del giocatore
-        const pin = document.getElementById(playerId);
-        if (pin && pin.parentElement) {
-            const pinWrapper = pin.parentElement;
-            pinWrapper.style.left = (xPx - 16) + 'px';
-            pinWrapper.style.top = (yPx - 32) + 'px';
+        const xBase = (pos.x / 100) * rect.width;
+        const yBase = (pos.y / 100) * rect.height;
+        // Calcola quanti giocatori sono sulla stessa cella
+        let playersOnCell = [];
+        if (typeof getAllPlayers === 'function') {
+            const allPlayers = getAllPlayers();
+            for (let pid of allPlayers) {
+                if (getPlayerPosition(pid) === cellNumber) {
+                    playersOnCell.push(pid);
+                }
+            }
+        } else if (typeof playerPositions === 'object') {
+            // fallback se non c'è getAllPlayers
+            for (let pid in playerPositions) {
+                if (playerPositions[pid] === cellNumber) {
+                    playersOnCell.push(pid);
+                }
+            }
+        }
+        // Se c'è solo un giocatore sulla cella, aggiorna la sua posizione normalmente
+        if (playersOnCell.length <= 1) {
+            const pin = document.getElementById(playerId);
+            if (pin && pin.parentElement) {
+                const pinWrapper = pin.parentElement;
+                pinWrapper.style.left = (xBase - 16) + 'px';
+                pinWrapper.style.top = (yBase - 32) + 'px';
+            }
+        } else {
+            // Calcola offset per ogni giocatore sulla stessa cella
+            const offsetRadius = 18; // px, distanza dal centro
+            const angleStep = (Math.PI * 2) / playersOnCell.length;
+            playersOnCell.forEach((pid, idx) => {
+                const angle = idx * angleStep;
+                const xOffset = Math.cos(angle) * offsetRadius;
+                const yOffset = Math.sin(angle) * offsetRadius;
+                const pin = document.getElementById(pid);
+                if (pin && pin.parentElement) {
+                    const pinWrapper = pin.parentElement;
+                    pinWrapper.style.left = (xBase - 16 + xOffset) + 'px';
+                    pinWrapper.style.top = (yBase - 32 + yOffset) + 'px';
+                }
+            });
         }
     }
 }
