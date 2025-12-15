@@ -141,6 +141,8 @@ window.addEventListener("DOMContentLoaded", function () {
     if(settings == undefined) {console.error("Settings not found!"); return;}
     loadSettings(settings);
 
+    document.querySelector('#debug-bar').style.display = showDebug ? 'block' : 'none';
+    document.querySelector('#step-indicator').style.display = showSteps ? 'block' : 'none';
 });
 
 function loadSettings(settings) {
