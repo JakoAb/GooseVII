@@ -35,13 +35,15 @@ var settings = {
           "domanda": "2+2",
           "rispostaCorretta": "4",
           "risposta1": "3",
-          "risposta2": "5"
+          "risposta2": "5",
+		  "bonus_points": 10
         },
         {
           "domanda": "5-3",
           "rispostaCorretta": "2",
           "risposta1": "1",
-          "risposta2": "3"
+          "risposta2": "3",
+		  "bonus_points": 3
         }
       ]
     },

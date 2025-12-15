@@ -387,7 +387,8 @@ exportAllBtn.addEventListener("click", function () {
         domanda: q.domanda || "",
         rispostaCorretta: q.rispostaCorretta || "",
         risposta1: q.risposta1 || "",
-        risposta2: q.risposta2 || ""
+        risposta2: q.risposta2 || "",
+        bonus_points: q.bonus_points || 0
       }));
     }
     return {
@@ -475,16 +476,21 @@ function openCellQuestionsModal(cella) {
                     <div style=\"margin-bottom:8px;\"><label>R. Errata 2: <input type=\"text\" class=\"input-err\" value=\"${
                       q.risposta2 || ""
                     }\" data-field=\"risposta2\" data-qidx=\"${qIdx}\" /></label></div>
+                    <div style="margin-bottom:8px;"><label>Bonus Points: <input type="number" min="0" max="99" value="${q.bonus_points || 0}" data-field="bonus_points" data-qidx="${qIdx}" style="width:60px;" /></label></div>
                 `;
       container.appendChild(card);
     });
   }
   // Listener input
-  container.querySelectorAll('input[type="text"]').forEach((input) => {
+  container.querySelectorAll('input[type="text"],input[type="number"]').forEach((input) => {
     input.addEventListener("input", function (e) {
       const qIdx = parseInt(e.target.getAttribute("data-qidx"));
       const field = e.target.getAttribute("data-field");
-      questionsData[idx].domande[qIdx][field] = e.target.value;
+      if(field === 'bonus_points') {
+        questionsData[idx].domande[qIdx][field] = parseInt(e.target.value) || 0;
+      } else {
+        questionsData[idx].domande[qIdx][field] = e.target.value;
+      }
     });
   });
   // Listener chiudi card
@@ -521,6 +527,7 @@ function openCellQuestionsModal(cella) {
         rispostaCorretta: "",
         risposta1: "",
         risposta2: "",
+        bonus_points: 0
       });
       openCellQuestionsModal(cella);
     }

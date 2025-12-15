@@ -20,13 +20,15 @@ const DURATA_ANIMAZIONE_DADO = 800;
 // Attesa dopo estrazione dado prima di chiudere box (ms)
 const ATTESA_POST_DADO = 500;
 // Durata countdown inizio partita (s)
-const DURATA_COUNTDOWN_START = 3;
+const DURATA_COUNTDOWN_START = 0;
 
 const stepGameStateBtn = document.getElementById("step-game-state-btn");
 var stepAnimationInProgress = false;
-var diceFaces = 6;
+var diceFaces = 1;
 var lastDiceRoll = 0;
 var lastBonusSteps = 0;
+// Variabile per tenere traccia dei bonus_points della domanda corrente
+let lastBonusPoints = 1;
 
 stepGameStateBtn.addEventListener("click", () => {
     if(currentGameTurn == 0){
@@ -58,7 +60,7 @@ function resolveGameStateStep(playerId, state){
             resolveCheckCell(playerId);
             break;
         case 'BONUS_STEP':
-            resolveBonusStep(playerId,lastBonusSteps);
+            resolveBonusStep(playerId);
             break;
         case 'END_TURN':
             resolveEndTurn(playerId);
@@ -349,8 +351,8 @@ function visualizzaDomanda(playerId, domanda) {
         btn.onclick = () => {
             modal.style.display = 'none';
             if(mainContent) mainContent.classList.remove('blurred-bg');
-            lastBonusSteps = r.isCorrect ? 1 : 0;
-            // Risolvi solo BONUS_STEP, che farà avanzare lo stato
+            // Se la risposta è corretta, assegna il bonus_points, altrimenti 0
+            lastBonusSteps = r.isCorrect ? lastBonusPoints : 0;
             resolveBonusStep(playerId);
         };
         rightCol.appendChild(btn);
@@ -444,7 +446,11 @@ function updateStepIndicator() {
     }
     let player = getCurrentPlayerName ? getCurrentPlayerName() : '';
     let state = getCurrentTurnState ? getCurrentTurnState() : '';
-    indicator.textContent = `Turno: ${player} | Stato: ${state}`;
+    let text = `Turno: ${player} | Stato: ${state}`;
+    if (state === 'BONUS_STEP') {
+        text += ` | Bonus Points: ${lastBonusPoints}`;
+    }
+    indicator.textContent = text;
 }
 
 // Richiama updateStepIndicator ogni volta che cambia lo stato
