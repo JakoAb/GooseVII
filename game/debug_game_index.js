@@ -97,14 +97,31 @@ function resolveStartTurn(playerId) {
     let color = getCurrentPlayerColor();
     box.style.background = color;
     // Calcola una versione scurita del colore per la shadow
-    function darkenColor(hex, percent) {
-        let c = hex.replace('#', '');
-        if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
-        let num = parseInt(c, 16);
-        let r = Math.max(0, (num >> 16) - 255 * percent);
-        let g = Math.max(0, ((num >> 8) & 0x00FF) - 255 * percent);
-        let b = Math.max(0, (num & 0x0000FF) - 255 * percent);
-        return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+    function darkenColor(inputColor, percent) {
+        // Supporta hex, rgb, hsl
+        if(inputColor.startsWith('#')) {
+            let c = inputColor.replace('#', '');
+            if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+            let num = parseInt(c, 16);
+            let r = Math.max(0, (num >> 16) - 255 * percent);
+            let g = Math.max(0, ((num >> 8) & 0x00FF) - 255 * percent);
+            let b = Math.max(0, (num & 0x0000FF) - 255 * percent);
+            return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+        } else if(inputColor.startsWith('rgb')) {
+            // rgb(a) string
+            let rgb = inputColor.match(/\d+/g).map(Number);
+            let r = Math.max(0, rgb[0] - 255 * percent);
+            let g = Math.max(0, rgb[1] - 255 * percent);
+            let b = Math.max(0, rgb[2] - 255 * percent);
+            return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+        } else if(inputColor.startsWith('hsl')) {
+            // hsl(a) string
+            let hsl = inputColor.match(/\d+/g).map(Number);
+            let h = hsl[0], s = hsl[1], l = hsl[2];
+            l = Math.max(0, l - 20); // oscura abbassando la luminosità
+            return `hsl(${h},${s}%,${l}%)`;
+        }
+        return inputColor;
     }
     const shadowColor = darkenColor(color, 0.25);
     box.style.boxShadow = `8px 8px 0px 0px ${shadowColor}`;
@@ -209,30 +226,91 @@ function visualizzaDomanda(playerId, domanda) {
         modal.style.left = '0';
         modal.style.width = '100vw';
         modal.style.height = '100vh';
-        modal.style.background = 'rgba(0,0,0,0.5)';
+        modal.style.background = 'rgba(0,0,0,0.18)';
         modal.style.display = 'flex';
         modal.style.alignItems = 'center';
         modal.style.justifyContent = 'center';
         modal.style.zIndex = '9999';
+        modal.style.backdropFilter = 'blur(8px)';
         document.body.appendChild(modal);
     }
+    // Effetto blur su main-content
+    const mainContent = document.getElementById('main-content');
+    if(mainContent) mainContent.classList.add('blurred-bg');
     modal.innerHTML = '';
 
-    // Crea il contenitore della domanda
-    const box = document.createElement('div');
-    box.style.background = '#fff';
-    box.style.padding = '32px';
-    box.style.borderRadius = '12px';
-    box.style.boxShadow = '0 2px 16px rgba(0,0,0,0.2)';
-    box.style.textAlign = 'center';
-    box.style.minWidth = '260px';
+    // Layout principale: griglia 2 colonne
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'minmax(180px, 220px) 1fr';
+    grid.style.gridTemplateRows = '1fr';
+    grid.style.width = '100vw';
+    grid.style.height = '80vh';
+    grid.style.overflow = 'visible';
+    grid.style.background = 'none';
+    grid.style.border = 'none';
+
+    // Colonna sinistra: solo personaggio
+    const leftCol = document.createElement('div');
+    leftCol.style.display = 'flex';
+    leftCol.style.flexDirection = 'column';
+    leftCol.style.alignItems = 'center';
+    leftCol.style.justifyContent = 'center';
+    leftCol.style.height = '100%';
+    leftCol.style.background = 'none';
+    leftCol.style.padding = '0';
+
+    // IMG personaggio
+    const img = document.createElement('img');
+    img.id = 'domanda-personaggio-img';
+    img.src = '../assets/schema_personaggio.png';
+    img.alt = 'Personaggio';
+    img.style.scale = '70%';
+    img.style.height = '120px';
+    img.style.width = '120px';
+    img.style.scale = '12.0';
+    img.style.marginLeft = '230%';
+    img.style.marginBottom = '-80%';
+    img.style.objectFit = 'contain';
+    leftCol.appendChild(img);
+
+    // Box domanda centrato nello schermo (fuori dalla griglia)
+    const domandaBox = document.createElement('div');
+    domandaBox.style.position = 'fixed';
+    domandaBox.style.top = '25%';
+    domandaBox.style.left = '40%';
+    domandaBox.style.transform = 'translate(-50%, -50%)';
+    domandaBox.style.background = 'rgba(245,245,245,0.92)';
+    domandaBox.style.borderRadius = '18px';
+    domandaBox.style.boxShadow = '0 2px 32px rgba(0,0,0,0.18)';
+    domandaBox.style.padding = '32px 48px';
+    domandaBox.style.minWidth = '320px';
+    domandaBox.style.maxWidth = '600px';
+    domandaBox.style.zIndex = '10001';
+    domandaBox.style.display = 'flex';
+    domandaBox.style.flexDirection = 'column';
+    domandaBox.style.alignItems = 'center';
+    domandaBox.style.justifyContent = 'center';
 
     // Domanda
     const domandaEl = document.createElement('div');
     domandaEl.textContent = domanda.domanda;
     domandaEl.style.fontSize = '1.3em';
-    domandaEl.style.marginBottom = '20px';
-    box.appendChild(domandaEl);
+    domandaEl.style.fontWeight = 'bold';
+    domandaEl.style.marginBottom = '12px';
+    domandaEl.style.textAlign = 'center';
+    domandaEl.style.color = '#222';
+    domandaBox.appendChild(domandaEl);
+
+    // Colonna destra: risposte
+    const rightCol = document.createElement('div');
+    rightCol.style.display = 'flex';
+    rightCol.style.flexDirection = 'column';
+    rightCol.style.justifyContent = 'center';
+    rightCol.style.alignItems = 'flex-end';
+    rightCol.style.height = '100%';
+    rightCol.style.padding = '32px 5vw 32px 0';
+    rightCol.style.gap = '32px';
 
     // Mescola le risposte
     let risposte = [
@@ -242,26 +320,46 @@ function visualizzaDomanda(playerId, domanda) {
     ];
     risposte = risposte.sort(() => Math.random() - 0.5);
 
-    // Bottoni risposte
+    // Calcola altezza box risposte
+    const boxHeight = (Math.floor((0.75 * 60 * window.innerHeight / 100) / risposte.length)+60) + 'px';
+
+    // Bottoni risposte grandi, verticali
     risposte.forEach(r => {
         const btn = document.createElement('button');
         btn.textContent = r.value;
-        btn.style.margin = '8px';
-        btn.style.padding = '10px 24px';
-        btn.style.fontSize = '1em';
-        btn.style.borderRadius = '8px';
-        btn.style.border = '1px solid #888';
+        btn.style.margin = '0';
+        btn.style.padding = '0 48px';
+        btn.style.height = boxHeight;
+        btn.style.display = 'flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.fontSize = '1.35em';
+        btn.style.fontWeight = 'bold';
+        btn.style.borderRadius = '16px';
+        btn.style.border = '2px solid #888';
+        btn.style.background = '#fff';
+        btn.style.color = '#222';
         btn.style.cursor = 'pointer';
+        btn.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
+        btn.style.transition = 'background 0.18s, color 0.18s';
+        btn.style.width = '550px';
+        btn.style.textAlign = 'center';
+        btn.onmouseover = () => { btn.style.background = '#fbc02d'; btn.style.color = '#222'; };
+        btn.onmouseout = () => { btn.style.background = '#fff'; btn.style.color = '#222'; };
         btn.onclick = () => {
             modal.style.display = 'none';
+            if(mainContent) mainContent.classList.remove('blurred-bg');
             lastBonusSteps = r.isCorrect ? 1 : 0;
             // Risolvi solo BONUS_STEP, che farà avanzare lo stato
             resolveBonusStep(playerId);
         };
-        box.appendChild(btn);
+        rightCol.appendChild(btn);
     });
 
-    modal.appendChild(box);
+    grid.appendChild(leftCol);
+    grid.appendChild(rightCol);
+    modal.appendChild(grid);
+    modal.appendChild(domandaBox);
     modal.style.display = 'flex';
 }
 
@@ -316,14 +414,12 @@ function takeStep(playerId,cellNumber){
         const rect = mainContent.getBoundingClientRect();
         const xPx = (pos.x / 100) * rect.width;
         const yPx = (pos.y / 100) * rect.height;
-        // Trova il pin del giocatore
+        // Trova il pinWrapper del giocatore
         const pin = document.getElementById(playerId);
-        if (pin) {
-            // Centra il pin rispetto alla cella
-            const pinWidth = pin.offsetWidth || 32;
-            const pinHeight = pin.offsetHeight || 32;
-            pin.style.left = (xPx - pinWidth/2) + 'px';
-            pin.style.top = (yPx - pinHeight/2) + 'px';
+        if (pin && pin.parentElement) {
+            const pinWrapper = pin.parentElement;
+            pinWrapper.style.left = (xPx - 16) + 'px';
+            pinWrapper.style.top = (yPx - 32) + 'px';
         }
     }
 }

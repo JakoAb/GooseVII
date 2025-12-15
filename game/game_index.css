@@ -117,6 +117,32 @@ body {
   pointer-events: auto;
   scale: 1.5;
 }
+.pin-wrapper {
+  position: absolute;
+  width: 32px;
+  height: 48px;
+  transition: left 0.5s, top 0.5s;
+  z-index: 100;
+}
+.player-pin-name-box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 32px;
+  max-width: 80px;
+  padding: 2px 8px;
+  background: rgba(30, 30, 30, 0.75);
+  border-radius: 8px;
+  font-size: 0.95em;
+  font-weight: bold;
+  text-align: center;
+  z-index: 110;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 #debug-bar {
     position: fixed;
     top: 0;
@@ -161,7 +187,12 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 800px
+  max-width: 635px;
+  cursor: move;
+  user-select: none;
+}
+.start-game-box:active {
+  cursor: grabbing;
 }
 .start-game-players-row {
   display: flex;
@@ -204,10 +235,30 @@ body {
   position: relative;
   transition: box-shadow 0.2s;
 }
-.player-card[data-player="0"] { background: #e53935; }
-.player-card[data-player="1"] { background: #43a047; }
-.player-card[data-player="2"] { background: #1e88e5; }
-.player-card[data-player="3"] { background: #fbc02d; }
+.player-card[data-player="0"],
+.player-card[data-player="1"],
+.player-card[data-player="2"],
+.player-card[data-player="3"] {
+  /* background: #e53935; background: #43a047; background: #1e88e5; background: #fbc02d; */
+  /* Rimosso per permettere colore dinamico */
+}
+.color-player-btn {
+  width: 48px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 1.2em;
+  background: rgba(0,0,0,0.10);
+  border: none;
+  cursor: pointer;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.color-player-btn:hover {
+  background: rgba(0,0,0,0.22);
+}
 .player-card .add-player-btn,
 .player-card .remove-player-btn {
   width: 48px;
@@ -271,4 +322,8 @@ body {
   0% { box-shadow: 0 0 0 0 #fbc02d55; }
   70% { box-shadow: 0 0 0 12px #fbc02d00; }
   100% { box-shadow: 0 0 0 0 #fbc02d00; }
+}
+.blurred-bg {
+  filter: blur(8px) !important;
+  transition: filter 0.3s;
 }

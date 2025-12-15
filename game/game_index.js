@@ -9,13 +9,8 @@ window.addEventListener("DOMContentLoaded", function () {
     const playersRow = document.getElementById("start-game-players-row");
     const startBtn = document.getElementById("start-game-btn");
     const MAX_PLAYERS = 50;
-    // Palette fissa per i primi 4, random per gli altri
-    const playerColorPalette = [
-      '#e53935', // rosso
-      '#43a047', // verde
-      '#1e88e5', // blu
-      '#fbc02d'  // giallo
-    ];
+    // Palette random per tutti i giocatori
+    const playerColorPalette = [];
     function getRandomColor() {
       // Colore HSL vivace
       const h = Math.floor(Math.random() * 360);
@@ -23,8 +18,8 @@ window.addEventListener("DOMContentLoaded", function () {
       const l = 45 + Math.floor(Math.random() * 15); // 45-60%
       return `hsl(${h},${s}%,${l}%)`;
     }
-    // Genera palette completa
-    for(let i=4; i<MAX_PLAYERS; i++) {
+    // Genera palette random per tutti i giocatori
+    for(let i=0; i<MAX_PLAYERS; i++) {
       playerColorPalette[i] = getRandomColor();
     }
     // Stato locale
@@ -40,6 +35,26 @@ window.addEventListener("DOMContentLoaded", function () {
       const addBtn = document.createElement('button');
       addBtn.className = 'add-player-btn';
       addBtn.textContent = '+';
+      // Bottone colore
+      const colorBtn = document.createElement('button');
+      colorBtn.className = 'color-player-btn';
+      colorBtn.textContent = '🎨';
+      colorBtn.style.marginTop = '8px';
+      colorBtn.style.width = '48px';
+      colorBtn.style.height = '32px';
+      colorBtn.style.borderRadius = '8px';
+      colorBtn.style.fontSize = '1.2em';
+      colorBtn.style.background = 'rgba(0,0,0,0.10)';
+      colorBtn.style.border = 'none';
+      colorBtn.style.cursor = 'pointer';
+      colorBtn.title = 'Cambia colore';
+      // Cambia colore card e palette locale
+      colorBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const newColor = getRandomColor();
+        card.style.background = newColor;
+        playerColorPalette[i] = newColor;
+      });
       // Input e bottone -
       const inputDiv = document.createElement('div');
       inputDiv.className = 'player-inputs';
@@ -55,6 +70,7 @@ window.addEventListener("DOMContentLoaded", function () {
       inputDiv.appendChild(nameInput);
       inputDiv.appendChild(removeBtn);
       card.appendChild(addBtn);
+      card.appendChild(colorBtn);
       card.appendChild(inputDiv);
       playersRow.appendChild(card);
       // Eventi
@@ -88,7 +104,17 @@ window.addEventListener("DOMContentLoaded", function () {
       if (typeof playerNames !== 'undefined') playerNames.length = 0;
       if (typeof playerColors !== 'undefined') playerColors.length = 0;
       const names = localPlayerNames.map((n, i) => n && n.length > 0 ? n : null).filter(n => n);
-      const colors = localPlayerNames.map((n, i) => n && n.length > 0 ? playerColorPalette[i] : null).filter(c => c);
+      // Recupera i colori effettivi delle card attive
+      const cards = playersRow.querySelectorAll('.player-card');
+      const colors = [];
+      cards.forEach((card, i) => {
+        const name = localPlayerNames[i];
+        if (name && name.length > 0) {
+          // Usa il colore di background effettivo della card
+          const style = window.getComputedStyle(card);
+          colors.push(style.backgroundColor);
+        }
+      });
       if (typeof playerNames !== 'undefined') names.forEach(n => playerNames.push(n));
       if (typeof playerColors !== 'undefined') colors.forEach(c => playerColors.push(c));
       // Avvia partita con countdown animato
@@ -168,19 +194,50 @@ function dropPlayerPieces(numPlayers){
   const yPx = (pos.y / 100) * rect.height;
 
   for(let i=0; i<numPlayers; i++){
+    const pinWrapper = document.createElement('div');
+    pinWrapper.className = 'pin-wrapper';
+    pinWrapper.style.position = 'absolute';
+    pinWrapper.style.left = (xPx - 16 + i*24) + 'px';
+    pinWrapper.style.top = (yPx - 32) + 'px';
+    pinWrapper.style.width = '32px';
+    pinWrapper.style.height = '48px';
+    pinWrapper.style.zIndex = 100 + i;
+    pinWrapper.setAttribute('data-player', i+1);
+    // Pin
     const pin = document.createElement('img');
     pin.src = '../assets/player_pin.png';
     pin.className = 'player-pin';
-    pin.style.position = 'absolute';
-    pin.style.left = (xPx - 16 + i*24) + 'px'; // offset per non sovrapporre
-    pin.style.top = (yPx - 32) + 'px';
     pin.style.width = '32px';
     pin.style.height = '32px';
-    pin.style.zIndex = 100 + i;
-    pin.style.backgroundColor= playerColorPalette[i % playerColorPalette.length]; /* colore che vuoi */
+    let playerColor = window.playerColors && window.playerColors[i] ? window.playerColors[i] : playerColorPalette[i % playerColorPalette.length];
+    pin.style.backgroundColor = playerColor;
     pin.setAttribute('id','pp-' + (i+1));
-    pin.setAttribute('data-player', i+1);
-    imageContainer.appendChild(pin);
+    pinWrapper.appendChild(pin);
+    // Box nome sotto il pin
+    if (window.playerNames && window.playerNames[i]) {
+      const nameBox = document.createElement('div');
+      nameBox.className = 'player-pin-name-box';
+      nameBox.textContent = window.playerNames[i];
+      nameBox.style.position = 'absolute';
+      nameBox.style.left = '0px';
+      nameBox.style.top = '34px';
+      nameBox.style.minWidth = '32px';
+      nameBox.style.maxWidth = '80px';
+      nameBox.style.padding = '2px 8px';
+      nameBox.style.background = 'rgba(30,30,30,0.75)';
+      nameBox.style.borderRadius = '8px';
+      nameBox.style.fontSize = '0.95em';
+      nameBox.style.fontWeight = 'bold';
+      nameBox.style.color = playerColor;
+      nameBox.style.textAlign = 'center';
+      nameBox.style.zIndex = 101 + i;
+      nameBox.style.pointerEvents = 'none';
+      nameBox.style.whiteSpace = 'nowrap';
+      nameBox.style.overflow = 'hidden';
+      nameBox.style.textOverflow = 'ellipsis';
+      pinWrapper.appendChild(nameBox);
+    }
+    imageContainer.appendChild(pinWrapper);
     playerTurns.push('pp-' + (i+1));
     setPlayerPosition('pp-' + (i+1), 0);
   }
