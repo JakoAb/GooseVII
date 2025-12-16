@@ -128,7 +128,7 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-16%, -129%);
   min-width: 32px;
   max-width: 80px;
   padding: 2px 8px;
@@ -178,7 +178,7 @@ body {
   justify-content: center;
 }
 .start-game-box {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.12)
   border-radius: 24px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   padding: 40px 32px 32px 32px;
@@ -302,7 +302,7 @@ body {
   font-weight: bold;
   border-radius: 12px;
   border: none;
-  background: #28212f;
+  background: #79ac57;;
   color: #fff;
   margin-top: 24px;
   cursor: pointer;
@@ -326,4 +326,21 @@ body {
 .blurred-bg {
   filter: blur(8px) !important;
   transition: filter 0.3s;
+}
+.domanda-personaggio-img {
+      left: -20%;
+      width: 1600px;
+      height: 1065px;
+}
+
+/* Importa il font Sigmar One */
+@font-face {
+    font-family: 'Sigmar One';
+    src: url('../assets/SigmarOne-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body, button, input, select, textarea, .turno-giocatore-box, #step-indicator, #debug-bar, #dice-result-value, .domanda-modal, .domanda-box, .domanda-personaggio-img, .dice-result-box {
+    font-family: 'Sigmar One', cursive, sans-serif !important;
 }
