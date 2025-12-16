@@ -332,3 +332,15 @@ body {
       width: 1600px;
       height: 1065px;
 }
+
+/* Importa il font Sigmar One */
+@font-face {
+    font-family: 'Sigmar One';
+    src: url('../assets/SigmarOne-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body, button, input, select, textarea, .turno-giocatore-box, #step-indicator, #debug-bar, #dice-result-value, .domanda-modal, .domanda-box, .domanda-personaggio-img, .dice-result-box {
+    font-family: 'Sigmar One', cursive, sans-serif !important;
+}

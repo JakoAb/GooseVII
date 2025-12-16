@@ -66,6 +66,7 @@ function resolveStartTurn(playerId) {
         box.style.display = 'flex';
         box.style.flexDirection = 'column';
         box.style.alignItems = 'center';
+        box.style.textShadow = 'rgba(0, 0, 0, 0.35) 0px 5px 0px';
         document.body.appendChild(box);
     }
     box.className = 'turno-giocatore-box';
@@ -116,6 +117,7 @@ function resolveStartTurn(playerId) {
     diceBox.style.padding = '18px 36px';
     diceBox.style.marginBottom = '10px';
     diceBox.style.userSelect = 'none';
+    diceBox.style.minWidth = '100px';
     box.appendChild(diceBox);
     // Animazione dado
     box.setAttribute('data-rolling', 'true');
@@ -141,6 +143,8 @@ function resolveStartTurn(playerId) {
         lastDiceRoll = rollDice();
         diceBox.textContent = lastDiceRoll;
         box.setAttribute('data-rolling', 'false');
+        // Esplosione di numeri
+        explodeDiceNumbers(lastDiceRoll, box);
         // Animazione: sposta top di 10px e riduci la shadow
         box.style.transition = 'top 0.2s, box-shadow 0.2s';
         box.style.top = 'calc(50% + 10px)';
@@ -185,7 +189,7 @@ function resolveMove(playerId, roll) {
     var cellNumber = getPlayerPosition(playerId);
     console.log(playerId + " avanza alla cella " + (cellNumber + roll));
     // Esegui l'animazione di movimento e solo dopo passa a CHECK_CELL
-    movePieceToPositionWithStep(playerId, roll).then(() => {
+    movePieceToPositionWithStep(playerId, roll, false).then(() => {
         lastDiceRoll = 0;
         // Dopo che l'animazione è conclusa, attendi 0.5s e poi passa a CHECK_CELL
         setTimeout(() => {
@@ -409,12 +413,10 @@ function visualizzaDomanda(playerId, domanda) {
                     if (personaggioDiv) personaggioDiv.style.animation = '';
                     modal.style.display = 'none';
                     if(mainContent) mainContent.classList.remove('blurred-bg');
-                    // Pioggia di emoji festa
-                    rainPartyEmojis();
                     setTimeout(() => {
                         lastBonusSteps = r.isCorrect ? (domanda.bonus_points ? domanda.bonus_points : defaultBonusPoints) : wrongAnswerPenality;
                         newStep();
-                    }, 1200);
+                    }, 500);
                 }, 500);
             } else {
                 // Animazione errore: rosso + tremolio
@@ -514,7 +516,7 @@ function rainPartyEmojis() {
 function resolveBonusStep(playerId){
     console.log("bonus steps "+lastBonusSteps);
     // Esegui il movimento bonus e solo dopo passa allo step successivo
-    movePieceToPositionWithStep(playerId, lastBonusSteps).then(() => {
+    movePieceToPositionWithStep(playerId, lastBonusSteps, true).then(() => {
         lastBonusSteps = 0;
         // Dopo che l'animazione è conclusa, attendi 0.5s e poi passa a END_TURN tramite newStep
         setTimeout(() => {
@@ -542,7 +544,7 @@ function rollDice(){
     return Math.floor(Math.random() * diceFaces) + 1;
 }
 
-async function movePieceToPositionWithStep(playerId, roll) {
+async function movePieceToPositionWithStep(playerId, roll, isBonusStep) {
     stepAnimationInProgress = true;
 
     const direction = roll >= 0 ? 1 : -1;
@@ -552,6 +554,10 @@ async function movePieceToPositionWithStep(playerId, roll) {
         const cellNumber = getPlayerPosition(playerId);
         setPlayerPosition(playerId, cellNumber + direction);
         takeStep(playerId, cellNumber + direction);
+        // Pioggia di emoji solo nella fase bonus step
+        if (isBonusStep) {
+            rainPartyEmojis();
+        }
         await new Promise(resolve => setTimeout(resolve, DURATA_ANIMAZIONE_MOVIMENTO)); // 0.5 secondi di attesa
     }
 
@@ -694,3 +700,39 @@ updateStepIndicator();
         debugBar.appendChild(btn);
     }
 })();
+
+// ---
+// Esplosione animata di numeri del dado
+function explodeDiceNumbers(result, parentBox) {
+    const rect = parentBox.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const count = 18;
+    for (let i = 0; i < count; i++) {
+        const span = document.createElement('span');
+        span.textContent = result;
+        span.style.position = 'fixed';
+        span.style.left = centerX + 'px';
+        span.style.top = centerY + 'px';
+        span.style.fontSize = (32 + Math.random() * 32) + 'px';
+        span.style.fontWeight = 'bold';
+        span.style.color = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+        span.style.pointerEvents = 'none';
+        span.style.zIndex = 12001;
+        span.style.opacity = '1';
+        span.style.transition = 'transform 0.7s cubic-bezier(.36,1.5,.19,.97), opacity 0.7s linear';
+        document.body.appendChild(span);
+        // Direzione random
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = 120 + Math.random() * 80;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+        setTimeout(() => {
+            span.style.transform = `translate(${dx}px, ${dy}px) scale(${0.7 + Math.random()*0.7}) rotate(${Math.random()*360}deg)`;
+            span.style.opacity = '0';
+        }, 10);
+        setTimeout(() => {
+            span.remove();
+        }, 800);
+    }
+}
