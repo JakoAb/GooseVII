@@ -1,3 +1,5 @@
+let categorieDomanda = [ 'A', 'B', 'C', 'D' ];
+
 let scale = 1;
 let minScale = 1;
 let maxScale = 4;
@@ -388,7 +390,8 @@ exportAllBtn.addEventListener("click", function () {
         rispostaCorretta: q.rispostaCorretta || "",
         risposta1: q.risposta1 || "",
         risposta2: q.risposta2 || "",
-        bonus_points: q.bonus_points || 0
+        bonus_points: q.bonus_points || 0,
+        categoria: q.categoria || ''
       }));
     }
     return {
@@ -477,9 +480,15 @@ function openCellQuestionsModal(cella) {
                       q.risposta2 || ""
                     }\" data-field=\"risposta2\" data-qidx=\"${qIdx}\" /></label></div>
                     <div style="margin-bottom:8px;"><label>Bonus Points: <input type="number" min="0" max="99" value="${q.bonus_points || 0}" data-field="bonus_points" data-qidx="${qIdx}" style="width:60px;" /></label></div>
+                     <div style="margin-bottom:8px;"><label>Categoria: <select value="${q.categoria}" data-field="categoria" data-qidx="${qIdx}" style="width:60px;">`+popolaOptions(q.categoria)+`</select></label></div>
                 `;
       container.appendChild(card);
     });
+  }
+  function popolaOptions(selectedValue){
+    var ret = "";
+    categorieDomanda.forEach(cat => {ret = ret+"<option value='"+cat+"'"+(cat === selectedValue?'selected':'')+">"+cat+"</option>";});
+    return ret;
   }
   // Listener input
   container.querySelectorAll('input[type="text"],input[type="number"]').forEach((input) => {
@@ -493,6 +502,16 @@ function openCellQuestionsModal(cella) {
       }
     });
   });
+
+  container.querySelectorAll('select').forEach((input) => {
+       input.addEventListener("change", function (e) {
+            const qIdx = parseInt(e.target.getAttribute("data-qidx"));
+            const field = e.target.getAttribute("data-field");
+
+            questionsData[idx].domande[qIdx][field] = e.target.value;
+       });
+  });
+
   // Listener chiudi card
   container.querySelectorAll(".close-card-btn").forEach((btn) => {
     btn.onclick = function (e) {
@@ -527,7 +546,8 @@ function openCellQuestionsModal(cella) {
         rispostaCorretta: "",
         risposta1: "",
         risposta2: "",
-        bonus_points: 0
+        bonus_points: 0,
+        categoria: ''
       });
       openCellQuestionsModal(cella);
     }
