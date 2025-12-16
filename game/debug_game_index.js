@@ -409,8 +409,12 @@ function visualizzaDomanda(playerId, domanda) {
                     if (personaggioDiv) personaggioDiv.style.animation = '';
                     modal.style.display = 'none';
                     if(mainContent) mainContent.classList.remove('blurred-bg');
-                    lastBonusSteps = r.isCorrect ? (domanda.bonus_points ? domanda.bonus_points : defaultBonusPoints) : wrongAnswerPenality;
-                    newStep();
+                    // Pioggia di emoji festa
+                    rainPartyEmojis();
+                    setTimeout(() => {
+                        lastBonusSteps = r.isCorrect ? (domanda.bonus_points ? domanda.bonus_points : defaultBonusPoints) : wrongAnswerPenality;
+                        newStep();
+                    }, 1200);
                 }, 500);
             } else {
                 // Animazione errore: rosso + tremolio
@@ -480,6 +484,31 @@ function visualizzaDomanda(playerId, domanda) {
     modal.appendChild(grid);
     modal.appendChild(domandaBox);
     modal.style.display = 'flex';
+}
+
+// Pioggia di emoji festa
+function rainPartyEmojis() {
+    const emoji = '🎉';
+    const count = 32;
+    for (let i = 0; i < count; i++) {
+        const span = document.createElement('span');
+        span.textContent = emoji;
+        span.style.position = 'fixed';
+        span.style.left = Math.random() * 100 + 'vw';
+        span.style.top = '-48px';
+        span.style.fontSize = (32 + Math.random() * 32) + 'px';
+        span.style.pointerEvents = 'none';
+        span.style.zIndex = 99999;
+        span.style.transition = 'transform 1.1s linear, opacity 0.4s linear';
+        document.body.appendChild(span);
+        setTimeout(() => {
+            span.style.transform = `translateY(${window.innerHeight + 80}px) rotate(${Math.random()*360}deg)`;
+            span.style.opacity = '0.7';
+        }, 10 + Math.random()*200);
+        setTimeout(() => {
+            span.remove();
+        }, 1400 + Math.random()*400);
+    }
 }
 
 function resolveBonusStep(playerId){
