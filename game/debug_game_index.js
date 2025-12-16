@@ -226,7 +226,7 @@ function visualizzaDomanda(playerId, domanda) {
         modal.style.left = '0';
         modal.style.width = '100vw';
         modal.style.height = '100vh';
-        modal.style.background = 'rgba(0,0,0,0.18)';
+        modal.style.background = 'rgba(76, 0, 140, 0.37);';
         modal.style.display = 'flex';
         modal.style.alignItems = 'center';
         modal.style.justifyContent = 'center';
@@ -305,8 +305,9 @@ function visualizzaDomanda(playerId, domanda) {
     domandaBox.style.borderRadius = '18px';
     domandaBox.style.boxShadow = 'none';
     domandaBox.style.padding = '32px 48px';
-    domandaBox.style.minWidth = '320px';
-    domandaBox.style.maxWidth = '600px';
+    domandaBox.style.minWidth = '20%';
+    domandaBox.style.maxWidth = '45%';
+    domandaBox.style.minHeight = '300px';
     domandaBox.style.zIndex = '10001';
     domandaBox.style.display = 'flex';
     domandaBox.style.flexDirection = 'column';
@@ -331,7 +332,7 @@ function visualizzaDomanda(playerId, domanda) {
     rightCol.style.alignItems = 'flex-end';
     rightCol.style.height = '100%';
     rightCol.style.padding = '32px 5vw 32px 0';
-    rightCol.style.gap = '32px';
+    rightCol.style.gap = '100px';
 
     // Mescola le risposte
     let risposte = [
@@ -358,35 +359,34 @@ function visualizzaDomanda(playerId, domanda) {
         btn.style.fontWeight = 'bold';
         btn.style.borderRadius = '16px';
         btn.style.border = 'none';
-        btn.style.background = 'rgb(192,192,192)'; // grigio 25% più scuro del bianco
-        btn.style.color = '#222';
+        btn.style.background = 'rgb(35, 201, 209)'; // grigio 25% più scuro del bianco
+        btn.style.color = '#FFF';
         btn.style.cursor = 'pointer';
-        btn.style.boxShadow = 'none';
-        btn.style.transition = 'background 0.18s, color 0.18s, transform 0.18s';
+        btn.style.boxShadow = 'rgb(0, 131, 145) 0px 35px 0px 0px';
+        btn.style.transition = 'background 0.18s, color 0.18s, transform 0.18s, box-shadow 0.18s';
         btn.style.width = '550px';
         btn.style.textAlign = 'center';
+        btn.style.textShadow = 'rgba(0, 0, 0, 0.35) 0px 5px 0px';
+        btn.style.fontSize = '4em';
+
         // Effetto pressione su hover/click
         btn.onmouseover = () => {
-            btn.style.background = 'rgb(160,160,160)';
-            btn.style.color = '#222';
+            btn.style.background = 'rgb(35, 201, 209)';
             btn.style.transform = 'translateY(10px)';
+            btn.style.boxShadow = 'rgb(0, 131, 145) 0px 15px 0px 0px';
         };
         btn.onmouseout = () => {
-            btn.style.background = 'rgb(192,192,192)';
-            btn.style.color = '#222';
+            btn.style.background = 'rgb(35, 201, 209)';
             btn.style.transform = 'none';
+            btn.style.boxShadow = 'rgb(0, 131, 145) 0px 35px 0px 0px';
         };
-        btn.onmousedown = () => {
-            btn.style.transform = 'translateY(18px)';
-        };
-        btn.onmouseup = () => {
-            btn.style.transform = 'translateY(10px)';
-        };
+
         btn.onclick = () => {
             if (r.isCorrect) {
                 // Animazione corretta: verde + salto doppio
                 btn.style.background = '#27ae60';
                 btn.style.color = '#fff';
+                btn.style.boxShadow = '#1e864a 0px 15px 0px 0px';
                 btn.style.transition = 'background 0.18s, color 0.18s';
                 // Definisci animazione salto se non esiste
                 if (!document.getElementById('jump-twice-style')) {
@@ -423,6 +423,7 @@ function visualizzaDomanda(playerId, domanda) {
                 btn.style.background = '#e74c3c';
                 btn.style.color = '#fff';
                 btn.style.transition = 'background 0.18s, color 0.18s';
+                btn.style.boxShadow = '#aa382c 0px 15px 0px 0px';
                 btn.style.animation = 'shake-horizontal 0.5s cubic-bezier(.36,.07,.19,.97) both';
                 // Definisci l'animazione shake se non esiste
                 if (!document.getElementById('shake-horizontal-style')) {
