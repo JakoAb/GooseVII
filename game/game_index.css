@@ -327,3 +327,8 @@ body {
   filter: blur(8px) !important;
   transition: filter 0.3s;
 }
+.domanda-personaggio-img {
+      left: -20%;
+      width: 1600px;
+      height: 1065px;
+}

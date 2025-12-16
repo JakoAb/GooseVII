@@ -248,27 +248,48 @@ function visualizzaDomanda(playerId, domanda) {
 
     // Colonna sinistra: solo personaggio
     const leftCol = document.createElement('div');
-    leftCol.style.display = 'flex';
-    leftCol.style.flexDirection = 'column';
-    leftCol.style.alignItems = 'center';
-    leftCol.style.justifyContent = 'center';
-    leftCol.style.height = '100%';
-    leftCol.style.background = 'none';
-    leftCol.style.padding = '0';
-
-    // IMG personaggio
-    const img = document.createElement('img');
-    img.id = 'domanda-personaggio-img';
-    img.src = showArtworkGrid ? '../assets/schema_personaggio.png' : '../assets/personaggio.png';
-    img.alt = 'Personaggio';
-    img.style.scale = '70%';
-    img.style.height = '120px';
-    img.style.width = '120px';
-    img.style.scale = '12.0';
-    img.style.marginLeft = '230%';
-    img.style.marginBottom = '-80%';
-    img.style.objectFit = 'contain';
-    leftCol.appendChild(img);
+    leftCol.style.position = 'relative';
+    // IMG personaggio -> ora div con background-image
+    const personaggioDiv = document.createElement('div');
+    personaggioDiv.id = 'domanda-personaggio-img';
+    personaggioDiv.style.position = 'fixed';
+    personaggioDiv.style.left = '-80%';
+    personaggioDiv.style.right = '0';
+    personaggioDiv.style.bottom = '-10%';
+    personaggioDiv.style.margin = '0 auto';
+    personaggioDiv.style.width = '1600px';
+    personaggioDiv.style.height = '1065px';
+    personaggioDiv.style.backgroundImage = `url('${showArtworkGrid ? '../assets/schema_personaggio.png' : '../assets/personaggio.png'}')`;
+    personaggioDiv.style.backgroundSize = 'contain';
+    personaggioDiv.style.backgroundRepeat = 'no-repeat';
+    personaggioDiv.style.backgroundPosition = 'center bottom';
+    personaggioDiv.style.zIndex = '10000';
+    // Animazione: parte nascosto sotto lo schermo
+    personaggioDiv.style.transform = 'translateY(150%)';
+    personaggioDiv.style.transition = 'transform 0.5s cubic-bezier(0.4,1.4,0.6,1)';
+    leftCol.appendChild(personaggioDiv);
+    // Dopo breve delay, porta il personaggio in posizione
+    setTimeout(() => {
+        personaggioDiv.style.transform = 'translateY(0)';
+        // Dopo l'entrata, inizia movimento "idle" leggero
+        setTimeout(() => {
+            let t = 0;
+            function idleAnim() {
+                t += 0.04;
+                const dx = Math.sin(t*1.2)*4;
+                const dy = Math.cos(t*1.7)*3;
+                personaggioDiv.style.transform = `translateY(0) translate(${dx}px, ${dy}px)`;
+                personaggioDiv._idleAnimFrame = requestAnimationFrame(idleAnim);
+            }
+            idleAnim();
+        }, 500);
+    }, 50);
+    // Quando la modale viene chiusa, ferma l'animazione
+    modal.addEventListener('transitionend', () => {
+        if (modal.style.display === 'none' && personaggioDiv._idleAnimFrame) {
+            cancelAnimationFrame(personaggioDiv._idleAnimFrame);
+        }
+    });
 
     // Box domanda centrato nello schermo (fuori dalla griglia)
     const domandaBox = document.createElement('div');
@@ -358,11 +379,98 @@ function visualizzaDomanda(playerId, domanda) {
             btn.style.transform = 'translateY(10px)';
         };
         btn.onclick = () => {
-            modal.style.display = 'none';
-            if(mainContent) mainContent.classList.remove('blurred-bg');
-            // Se la risposta è corretta, assegna il bonus_points, altrimenti 0
-            lastBonusSteps = r.isCorrect ? (domanda.bonus_points ? domanda.bonus_points : defaultBonusPoints) : wrongAnswerPenality;
-            newStep();
+            if (r.isCorrect) {
+                // Animazione corretta: verde + salto doppio
+                btn.style.background = '#27ae60';
+                btn.style.color = '#fff';
+                btn.style.transition = 'background 0.18s, color 0.18s';
+                // Definisci animazione salto se non esiste
+                if (!document.getElementById('jump-twice-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'jump-twice-style';
+                    style.innerHTML = `@keyframes jump-twice {
+                        0% { transform: none; }
+                        10% { transform: translateY(-18px); }
+                        20% { transform: none; }
+                        30% { transform: translateY(-14px); }
+                        40% { transform: none; }
+                        100% { transform: none; }
+                    }`;
+                    document.head.appendChild(style);
+                }
+                btn.style.animation = 'jump-twice 0.5s cubic-bezier(.36,1.5,.19,.97)';
+                // Anima anche il personaggio
+                const personaggioDiv = document.getElementById('domanda-personaggio-img');
+                if (personaggioDiv) {
+                    personaggioDiv.style.animation = 'jump-twice 0.5s cubic-bezier(.36,1.5,.19,.97)';
+                }
+                setTimeout(() => {
+                    btn.style.animation = '';
+                    if (personaggioDiv) personaggioDiv.style.animation = '';
+                    modal.style.display = 'none';
+                    if(mainContent) mainContent.classList.remove('blurred-bg');
+                    lastBonusSteps = r.isCorrect ? (domanda.bonus_points ? domanda.bonus_points : defaultBonusPoints) : wrongAnswerPenality;
+                    newStep();
+                }, 500);
+            } else {
+                // Animazione errore: rosso + tremolio
+                btn.style.background = '#e74c3c';
+                btn.style.color = '#fff';
+                btn.style.transition = 'background 0.18s, color 0.18s';
+                btn.style.animation = 'shake-horizontal 0.5s cubic-bezier(.36,.07,.19,.97) both';
+                // Definisci l'animazione shake se non esiste
+                if (!document.getElementById('shake-horizontal-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'shake-horizontal-style';
+                    style.innerHTML = `@keyframes shake-horizontal {
+                        10%, 90% { transform: translateX(-2px); }
+                        20%, 80% { transform: translateX(4px); }
+                        30%, 50%, 70% { transform: translateX(-8px); }
+                        40%, 60% { transform: translateX(8px); }
+                        100% { transform: none; }
+                    }`;
+                    document.head.appendChild(style);
+                }
+                // Ruota il personaggio di 35 gradi verso destra in contemporanea
+                const personaggioDiv = document.getElementById('domanda-personaggio-img');
+                if (personaggioDiv) {
+                    // Sospendi idle
+                    if (personaggioDiv._idleAnimFrame) {
+                        cancelAnimationFrame(personaggioDiv._idleAnimFrame);
+                        personaggioDiv._idleAnimFrame = null;
+                    }
+                    // Salva la trasformazione corrente
+                    const idleTransform = personaggioDiv.style.transform || '';
+                    personaggioDiv._oldTransform = idleTransform;
+                    personaggioDiv.style.transition = 'transform 0.18s cubic-bezier(.36,.07,.19,.97)';
+                    // Applica rotazione combinata
+                    let baseTransform = idleTransform.replace(/rotate\([^)]*\)/, '');
+                    personaggioDiv.style.transform = baseTransform + ' rotate(25deg)';
+                }
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    if(mainContent) mainContent.classList.remove('blurred-bg');
+                    lastBonusSteps = 0;
+                    // Ripristina la rotazione e idle dopo la chiusura
+                    if (personaggioDiv) {
+                        personaggioDiv.style.transition = 'transform 0.18s';
+                        personaggioDiv.style.transform = personaggioDiv._oldTransform || '';
+                        // Riavvia idle
+                        setTimeout(() => {
+                            let t = 0;
+                            function idleAnim() {
+                                t += 0.04;
+                                const dx = Math.sin(t*1.2)*4;
+                                const dy = Math.cos(t*1.7)*3;
+                                personaggioDiv.style.transform = `translateY(0) translate(${dx}px, ${dy}px)`;
+                                personaggioDiv._idleAnimFrame = requestAnimationFrame(idleAnim);
+                            }
+                            idleAnim();
+                        }, 200);
+                    }
+                    newStep();
+                }, 500);
+            }
         };
         rightCol.appendChild(btn);
     });
@@ -512,3 +620,48 @@ advanceGameState = advanceGameStateWithIndicator;
 
 // Aggiorna subito all'avvio
 updateStepIndicator();
+
+// DEBUG BAR
+(function(){
+    let debugBar = document.getElementById('debug-bar');
+    if (!debugBar) {
+        debugBar = document.createElement('div');
+        debugBar.id = 'debug-bar';
+        debugBar.style.position = 'fixed';
+        debugBar.style.top = '0';
+        debugBar.style.left = '0';
+        debugBar.style.background = 'rgba(0,0,0,0.7)';
+        debugBar.style.color = '#fff';
+        debugBar.style.padding = '6px 18px';
+        debugBar.style.zIndex = '12000';
+        debugBar.style.fontSize = '1em';
+        debugBar.style.display = 'flex';
+        debugBar.style.gap = '12px';
+        debugBar.style.alignItems = 'center';
+        document.body.appendChild(debugBar);
+    }
+    // Bottone domanda placeholder
+    let btn = document.getElementById('debug-domanda-btn');
+    if (!btn) {
+        btn = document.createElement('button');
+        btn.id = 'debug-domanda-btn';
+        btn.textContent = 'Domanda placeholder';
+        btn.style.fontSize = '1em';
+        btn.style.padding = '4px 12px';
+        btn.style.borderRadius = '6px';
+        btn.style.border = 'none';
+        btn.style.background = '#eee';
+        btn.style.color = '#222';
+        btn.style.cursor = 'pointer';
+        btn.onclick = function() {
+            visualizzaDomanda('debug', {
+                domanda: 'Quanto fa 0+0?',
+                rispostaCorretta: '0',
+                risposta1: '1',
+                risposta2: '2',
+                bonus_points: 1
+            });
+        };
+        debugBar.appendChild(btn);
+    }
+})();
