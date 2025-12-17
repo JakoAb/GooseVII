@@ -200,10 +200,21 @@ function resolveMove(playerId, roll) {
 
 function resolveCheckCell(playerId){
     var cellNumber = getPlayerPosition(playerId);
-    var domande = getDomandeByCella(cellNumber);
-    if(domande.length > 0){
-        console.log("Estraggo domanda per la cella " + cellNumber);
-        var domandaEstratta = domande[Math.floor(Math.random() * domande.length)];
+    var categoriaCella = getCategoriaByCella(cellNumber);
+    var domandaEstratta = null;
+
+    if(settings.configurazioni.tipoDomande === 'pool' && categoriaCella != ''){
+        //cerca domande nella categoria della cella
+        domandaEstratta = getDomandaFromPoolByCategoria(categoriaCella);
+        domandaEstratta.categoria = categoriaCella;
+    }else{
+        var domande = getDomandeByCella(cellNumber);
+        if(domande.length > 0){
+            domandaEstratta = domande[Math.floor(Math.random() * domande.length)];
+        }
+    }
+
+    if(domandaEstratta != null){
         visualizzaDomanda(playerId, domandaEstratta);
     }else{
         console.log("Nessuna domanda per la cella "+cellNumber);
@@ -212,6 +223,15 @@ function resolveCheckCell(playerId){
             newStep();
         }, ATTESA_POST_CHECK_CELL);
     }
+}
+
+function getDomandaFromPoolByCategoria(categoriaCella){
+    if (!settings.poolDomande || !settings.poolDomande[categoriaCella] || settings.poolDomande[categoriaCella].length === 0) {
+        return null;
+    }
+    var domande = settings.poolDomande[categoriaCella];
+    var idx = Math.floor(Math.random() * domande.length);
+    return domande[idx];
 }
 
 function visualizzaDomanda(playerId, domanda) {

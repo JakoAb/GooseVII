@@ -8,7 +8,8 @@ function setBoardState(celle) {
       boardState.set(cellaObj.cella - 1, {
         x: cellaObj.posizione.x,
         y: cellaObj.posizione.y,
-        domande: cellaObj.domande || []
+        domande: cellaObj.domande || [],
+        categoria: cellaObj.categoria || ''
       });
     }
   });
@@ -34,5 +35,15 @@ function getDomandeByCella(cellNumber) {
   } else {
     console.warn(`Cella ${cellNumber} non trovata in boardState.`);
     return [];
+  }
+}
+
+function getCategoriaByCella(cellNumber) {
+  if (typeof boardState !== 'undefined' && boardState.has(cellNumber)) {
+    const pos = boardState.get(cellNumber);
+    return pos.categoria || '';
+  } else {
+    console.warn(`Cella ${cellNumber} non trovata in boardState.`);
+    return '';
   }
 }
