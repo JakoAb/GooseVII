@@ -207,7 +207,7 @@ function dropPlayerPieces(numPlayers){
     pinWrapper.setAttribute('data-player', i+1);
     // Pin
     const pin = document.createElement('img');
-    pin.src = '../assets/player_pin.png';
+    //pin.src = '../assets/static/player_pin.png';
     pin.className = 'player-pin';
     pin.style.width = '32px';
     pin.style.height = '32px';
