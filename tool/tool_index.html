@@ -25,6 +25,15 @@
       </div>
     </div>
     <div id="debug-bar">
+      <p class="label-debug">Configurazioni</p>
+      <button id="edit-config-btn" title="Config">Edit Configurazioni</button>
+      <span id="group-domande">
+          <p class="label-debug">Pool Domande</p>
+          <button id="edit-pool-a-btn" title="Config">Edit Pool Domande A</button><br>
+          <button id="edit-pool-b-btn" title="Config">Edit Pool Domande B</button><br>
+          <button id="edit-pool-c-btn" title="Config">Edit Pool Domande C</button><br>
+          <button id="edit-pool-d-btn" title="Config">Edit Pool Domande D</button>
+      </span>
       <p class="label-debug">Edit celle</p>
       <button id="toggle-pointer" title="Puntamento">Aggiungi</button>
       <button id="toggle-drag" title="Muovi">Muovi</button>
@@ -214,6 +223,27 @@
           id="img-upload-error"
           style="color: red; display: none"
         ></div>
+      </div>
+    </div>
+
+    <div id="config-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center;">
+      <div style="background:#fff; padding:32px 24px; border-radius:12px; min-width:320px; display:flex; flex-direction:column; gap:18px; align-items:stretch; position:relative;">
+        <label for="tipo-estrazione-select" style="font-weight:bold;">Tipo estrazione domande</label>
+        <select id="tipo-estrazione-select" style="font-size:1.1em; padding:6px 12px;">
+          <option value="pool">pool</option>
+          <option value="cella">cella</option>
+        </select>
+        <button id="close-config-modal" style="margin-top:18px; align-self:end;">Chiudi</button>
+      </div>
+    </div>
+
+    <!-- Modale gestione domande pool -->
+    <div id="pool-questions-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:10020; align-items:center; justify-content:center;">
+      <div style="background:#fff; padding:32px 24px; border-radius:12px; min-width:340px; max-width:90vw; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column; gap:18px; align-items:stretch; position:relative;">
+        <h3 id="pool-questions-title">Pool Domande</h3>
+        <div id="pool-questions-cards-container" style="display:flex; flex-direction:column; gap:14px;"></div>
+        <button id="add-pool-question-btn" style="align-self:start;">+ Aggiungi domanda</button>
+        <button id="close-pool-questions-modal" style="margin-top:18px; align-self:end;">Chiudi</button>
       </div>
     </div>
 

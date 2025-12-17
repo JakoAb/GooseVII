@@ -33,6 +33,10 @@ const imgUploadError = document.getElementById("img-upload-error");
 const mainContent = document.getElementById("main-content");
 const pointContainer = document.getElementById("point-container");
 const mainContainer = document.getElementById("main-container");
+const editConfigBtn = document.getElementById("edit-config-btn");
+const configModal = document.getElementById("config-modal");
+const tipoEstrazioneSelect = document.getElementById("tipo-estrazione-select");
+const closeConfigModalBtn = document.getElementById("close-config-modal");
 let debugDots = [];
 let questionsData = [];
 
@@ -381,6 +385,8 @@ closeQuestionsModalBtn.addEventListener("click", function () {
 });
 
 exportAllBtn.addEventListener("click", function () {
+  const tipoDomande = (tipoEstrazioneSelect && tipoEstrazioneSelect.value) ? tipoEstrazioneSelect.value : 'pool';
+  // Celle con domande
   const celle = debugDots.map((d, idx) => {
     const perc = getPercentCoords(d.x, d.y);
     let domande = [];
@@ -394,15 +400,21 @@ exportAllBtn.addEventListener("click", function () {
         categoria: q.categoria || ''
       }));
     }
+    // Salva anche la categoria della cella se presente
     return {
       cella: d.cella,
       posizione: { x: perc.x, y: perc.y },
       domande: domande,
+      categoria: d.categoria || ''
     };
   });
   const exportObj = {
     celle: celle,
-    layers: imageLayersBase64.slice()
+    layers: imageLayersBase64.slice(),
+    configurazioni: {
+      tipoDomande: tipoDomande
+    },
+    poolDomande: poolDomande
   };
   const js = "var settings = " + JSON.stringify(exportObj, null, 2) + ";";
   const blob = new Blob([js], { type: "application/javascript" });
@@ -447,6 +459,38 @@ function openCellQuestionsModal(cella) {
   const container = document.getElementById("cell-questions-cards-container");
   title.textContent = "Domande cella " + cella;
   container.innerHTML = "";
+
+  // --- SELECT CATEGORIA CELLA SE POOL ---
+  if (tipoEstrazioneSelect && tipoEstrazioneSelect.value === 'pool') {
+    let select = document.getElementById('cell-categoria-select');
+    if (!select) {
+      select = document.createElement('select');
+      select.id = 'cell-categoria-select';
+      select.style.marginLeft = '16px';
+      select.style.fontSize = '1.1em';
+      select.style.padding = '2px 8px';
+      select.style.borderRadius = '6px';
+      select.style.border = '1px solid #bbb';
+      title.parentNode.insertBefore(select, title.nextSibling);
+    }
+    select.innerHTML = '';
+    categorieDomanda.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      select.appendChild(opt);
+    });
+    // Valore attuale
+    select.value = debugDots[idx].categoria || '';
+    select.onchange = function() {
+      debugDots[idx].categoria = select.value;
+    };
+    select.style.display = '';
+  } else {
+    let select = document.getElementById('cell-categoria-select');
+    if (select) select.style.display = 'none';
+  }
+
   // Se non esiste la struttura domande, la inizializzo
   if (questionsData[idx] != undefined) {
     if (!questionsData[idx].domande) {
@@ -714,6 +758,8 @@ if (importAllBtn) {
         settings.celle.forEach((c, idx) => {
           const pos = getPixelCoords(c.posizione.x, c.posizione.y);
           addDebugDot(mainContent, debugDots, pos.x, pos.y, c.cella);
+          // Salva la categoria della cella se presente
+          if (c.categoria) debugDots[idx].categoria = c.categoria;
           if (Array.isArray(c.domande)) {
             questionsData[idx] = { cella: c.cella, posizione: c.posizione, domande: c.domande };
           } else {
@@ -730,6 +776,17 @@ if (importAllBtn) {
           imageContainer.appendChild(div);
           imageLayersBase64[idx] = url;
         });
+        // Popola configurazioni se presenti
+        if (settings.configurazioni && settings.configurazioni.tipoDomande && tipoEstrazioneSelect) {
+          tipoEstrazioneSelect.value = settings.configurazioni.tipoDomande;
+          updateGroupDomandeVisibility && updateGroupDomandeVisibility();
+        }
+        // Popola poolDomande se presenti
+        if (settings.poolDomande) {
+          poolDomande = settings.poolDomande;
+        } else {
+          poolDomande = { A: [], B: [], C: [], D: [] };
+        }
         alert("Importazione completata!");
         document.body.removeChild(input);
       };
@@ -738,3 +795,96 @@ if (importAllBtn) {
     input.click();
   });
 }
+
+if (editConfigBtn) {
+  editConfigBtn.addEventListener("click", function () {
+    if (configModal) configModal.style.display = "flex";
+  });
+}
+if (closeConfigModalBtn) {
+  closeConfigModalBtn.addEventListener("click", function () {
+    if (configModal) configModal.style.display = "none";
+  });
+}
+
+const groupDomande = document.getElementById("group-domande");
+function updateGroupDomandeVisibility() {
+  if (tipoEstrazioneSelect && groupDomande) {
+    groupDomande.style.display = tipoEstrazioneSelect.value === 'pool' ? '' : 'none';
+  }
+}
+if (tipoEstrazioneSelect) {
+  tipoEstrazioneSelect.addEventListener('change', updateGroupDomandeVisibility);
+  // Inizializza visibilità all'avvio
+  updateGroupDomandeVisibility();
+} else if (groupDomande) {
+  groupDomande.style.display = 'none';
+}
+
+// Nuova gestione pool domande
+const poolQuestionsModal = document.getElementById("pool-questions-modal");
+const poolQuestionsTitle = document.getElementById("pool-questions-title");
+const poolQuestionsCardsContainer = document.getElementById("pool-questions-cards-container");
+const addPoolQuestionBtn = document.getElementById("add-pool-question-btn");
+const closePoolQuestionsModalBtn = document.getElementById("close-pool-questions-modal");
+
+// Pool domande per categoria
+let poolDomande = { A: [], B: [], C: [], D: [] };
+
+function renderPoolQuestionsModal(cat) {
+  poolQuestionsTitle.textContent = `Pool Domande ${cat}`;
+  poolQuestionsCardsContainer.innerHTML = '';
+  const domande = poolDomande[cat] || [];
+  domande.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.style = 'border:1px solid #ccc; border-radius:8px; padding:12px; background:#fafafa; position:relative; margin-bottom:8px;';
+    card.innerHTML = `
+      <button type='button' data-qidx='${idx}' class='close-card-btn' style='position:absolute; top:8px; right:8px;'>X</button>
+      <div style=\"margin-bottom:8px;\"><label>Domanda: <input type=\"text\" value=\"${q.domanda || ''}\" data-field=\"domanda\" data-qidx=\"${idx}\" /></label></div>
+      <div style=\"margin-bottom:8px;\"><label>R. Corretta: <input type=\"text\" class=\"input-risp\" value=\"${q.rispostaCorretta || ''}\" data-field=\"rispostaCorretta\" data-qidx=\"${idx}\" /></label></div>
+      <div style=\"margin-bottom:8px;\"><label>R. Errata 1: <input type=\"text\" class=\"input-err\" value=\"${q.risposta1 || ''}\" data-field=\"risposta1\" data-qidx=\"${idx}\" /></label></div>
+      <div style=\"margin-bottom:8px;\"><label>R. Errata 2: <input type=\"text\" class=\"input-err\" value=\"${q.risposta2 || ''}\" data-field=\"risposta2\" data-qidx=\"${idx}\" /></label></div>
+      <div style=\"margin-bottom:8px;\"><label>Bonus Points: <input type=\"number\" min=\"0\" max=\"99\" value=\"${q.bonus_points || 0}\" data-field=\"bonus_points\" data-qidx=\"${idx}\" style=\"width:60px;\" /></label></div>
+    `;
+    poolQuestionsCardsContainer.appendChild(card);
+  });
+  // Gestione input
+  poolQuestionsCardsContainer.querySelectorAll('input[type="text"],input[type="number"]').forEach(input => {
+    input.addEventListener('input', function(e) {
+      const qIdx = parseInt(e.target.getAttribute('data-qidx'));
+      const field = e.target.getAttribute('data-field');
+      if(field === 'bonus_points') {
+        poolDomande[cat][qIdx][field] = parseInt(e.target.value) || 0;
+      } else {
+        poolDomande[cat][qIdx][field] = e.target.value;
+      }
+    });
+  });
+  // Gestione rimozione domanda
+  poolQuestionsCardsContainer.querySelectorAll('.close-card-btn').forEach(btn => {
+    btn.onclick = function(e) {
+      const qIdx = parseInt(e.target.getAttribute('data-qidx'));
+      poolDomande[cat].splice(qIdx, 1);
+      renderPoolQuestionsModal(cat);
+    };
+  });
+}
+
+function openPoolQuestionsModal(cat) {
+  renderPoolQuestionsModal(cat);
+  poolQuestionsModal.style.display = 'flex';
+  addPoolQuestionBtn.onclick = function() {
+    poolDomande[cat].push({ domanda: '', rispostaCorretta: '', risposta1: '', risposta2: '', bonus_points: 0 });
+    renderPoolQuestionsModal(cat);
+  };
+  closePoolQuestionsModalBtn.onclick = function() {
+    poolQuestionsModal.style.display = 'none';
+  };
+}
+
+document.getElementById('edit-pool-a-btn').addEventListener('click', function() { openPoolQuestionsModal('A'); });
+document.getElementById('edit-pool-b-btn').addEventListener('click', function() { openPoolQuestionsModal('B'); });
+document.getElementById('edit-pool-c-btn').addEventListener('click', function() { openPoolQuestionsModal('C'); });
+document.getElementById('edit-pool-d-btn').addEventListener('click', function() { openPoolQuestionsModal('D'); });
+
