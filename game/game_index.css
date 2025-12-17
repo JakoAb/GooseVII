@@ -336,7 +336,7 @@ body {
 /* Importa il font Sigmar One */
 @font-face {
     font-family: 'Sigmar One';
-    src: url('../assets/SigmarOne-Regular.ttf') format('truetype');
+    src: url('../assets/static/SigmarOne-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }

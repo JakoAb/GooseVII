@@ -1,5 +1,5 @@
 let categorieDomanda = [ 'A', 'B', 'C', 'D' ];
-
+let lastCategoria = 'A';
 let scale = 1;
 let minScale = 1;
 let maxScale = 4;
@@ -480,13 +480,13 @@ function openCellQuestionsModal(cella) {
                       q.risposta2 || ""
                     }\" data-field=\"risposta2\" data-qidx=\"${qIdx}\" /></label></div>
                     <div style="margin-bottom:8px;"><label>Bonus Points: <input type="number" min="0" max="99" value="${q.bonus_points || 0}" data-field="bonus_points" data-qidx="${qIdx}" style="width:60px;" /></label></div>
-                     <div style="margin-bottom:8px;"><label>Categoria: <select value="${q.categoria}" data-field="categoria" data-qidx="${qIdx}" style="width:60px;">`+popolaOptions(q.categoria)+`</select></label></div>
+                     <div style="margin-bottom:8px;"><label>Categoria: <select value="${q.categoria ?? ''}" data-field="categoria" data-qidx="${qIdx}" style="width:60px;">`+popolaOptions(q.categoria)+`</select></label></div>
                 `;
       container.appendChild(card);
     });
   }
   function popolaOptions(selectedValue){
-    var ret = "";
+    var ret = "<option value=''"+(selectedValue===''?'selected':'')+">---</option>";
     categorieDomanda.forEach(cat => {ret = ret+"<option value='"+cat+"'"+(cat === selectedValue?'selected':'')+">"+cat+"</option>";});
     return ret;
   }
@@ -509,6 +509,7 @@ function openCellQuestionsModal(cella) {
             const field = e.target.getAttribute("data-field");
 
             questionsData[idx].domande[qIdx][field] = e.target.value;
+            lastCategoria = e.target.value;
        });
   });
 

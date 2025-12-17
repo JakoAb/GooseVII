@@ -263,7 +263,7 @@ function visualizzaDomanda(playerId, domanda) {
     personaggioDiv.style.margin = '0 auto';
     personaggioDiv.style.width = '1600px';
     personaggioDiv.style.height = '1065px';
-    personaggioDiv.style.backgroundImage = `url('${showArtworkGrid ? '../assets/schema_personaggio.png' : '../assets/personaggio.png'}')`;
+    personaggioDiv.style.backgroundImage = `url('${showArtworkGrid ? '../assets/schema_personaggio.png' : getPersonaggioByCategoria(domanda.categoria)}')`;
     personaggioDiv.style.backgroundSize = 'contain';
     personaggioDiv.style.backgroundRepeat = 'no-repeat';
     personaggioDiv.style.backgroundPosition = 'center bottom';
@@ -457,7 +457,7 @@ function visualizzaDomanda(playerId, domanda) {
                 setTimeout(() => {
                     modal.style.display = 'none';
                     if(mainContent) mainContent.classList.remove('blurred-bg');
-                    lastBonusSteps = 0;
+                    lastBonusSteps = wrongAnswerPenality;
                     // Ripristina la rotazione e idle dopo la chiusura
                     if (personaggioDiv) {
                         personaggioDiv.style.transition = 'transform 0.18s';
@@ -487,6 +487,25 @@ function visualizzaDomanda(playerId, domanda) {
     modal.appendChild(grid);
     modal.appendChild(domandaBox);
     modal.style.display = 'flex';
+}
+
+function getPersonaggioByCategoria(categoria){
+    var ret = '../assets/personaggio_';
+    if(categoria===undefined || categoria.trim()==''){
+        console.log('immagine non trovata per categoria:'+categoria??'undefined');
+        return '../assets/static/personaggio_default.png'
+    }
+    ret += categoria.toLowerCase() + '.png';
+
+    //se esiste l'immagine la uso, altrimenti uso personaggio_a
+    var img = new Image();
+    img.src = ret;
+    img.onerror = function() {
+        console.log('immagine non trovata per categoria:'+categoria??'undefined');
+        ret = '../assets/static/personaggio_default.png';
+    };
+
+    return ret;
 }
 
 // Pioggia di emoji festa
@@ -556,7 +575,7 @@ async function movePieceToPositionWithStep(playerId, roll, isBonusStep) {
         setPlayerPosition(playerId, cellNumber + direction);
         takeStep(playerId, cellNumber + direction);
         // Pioggia di emoji solo nella fase bonus step
-        if (isBonusStep) {
+        if (isBonusStep && direction > 0) {
             rainPartyEmojis();
         }
         await new Promise(resolve => setTimeout(resolve, DURATA_ANIMAZIONE_MOVIMENTO)); // 0.5 secondi di attesa
