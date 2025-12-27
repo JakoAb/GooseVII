@@ -281,8 +281,8 @@ function visualizzaDomanda(playerId, domanda) {
     personaggioDiv.style.right = '0';
     personaggioDiv.style.bottom = '-10%';
     personaggioDiv.style.margin = '0 auto';
-    personaggioDiv.style.width = '1600px';
-    personaggioDiv.style.height = '1065px';
+    personaggioDiv.style.width = '100%';
+    personaggioDiv.style.height = '100%';
     personaggioDiv.style.backgroundImage = `url('${showArtworkGrid ? '../assets/schema_personaggio.png' : getPersonaggioByCategoria(domanda.categoria)}')`;
     personaggioDiv.style.backgroundSize = 'contain';
     personaggioDiv.style.backgroundRepeat = 'no-repeat';
@@ -296,17 +296,19 @@ function visualizzaDomanda(playerId, domanda) {
     setTimeout(() => {
         personaggioDiv.style.transform = 'translateY(0)';
         // Dopo l'entrata, inizia movimento "idle" leggero
-        setTimeout(() => {
-            let t = 0;
-            function idleAnim() {
-                t += 0.04;
-                const dx = Math.sin(t*1.2)*4;
-                const dy = Math.cos(t*1.7)*3;
-                personaggioDiv.style.transform = `translateY(0) translate(${dx}px, ${dy}px)`;
-                personaggioDiv._idleAnimFrame = requestAnimationFrame(idleAnim);
-            }
-            idleAnim();
-        }, 500);
+        if(idleFxActive){
+            setTimeout(() => {
+                        let t = 0;
+                        function idleAnim() {
+                            t += 0.04;
+                            const dx = Math.sin(t*1.2)*4;
+                            const dy = Math.cos(t*1.7)*3;
+                            personaggioDiv.style.transform = `translateY(0) translate(${dx}px, ${dy}px)`;
+                            personaggioDiv._idleAnimFrame = requestAnimationFrame(idleAnim);
+                        }
+                        idleAnim();
+                    }, 500);
+        }
     }, 50);
     // Quando la modale viene chiusa, ferma l'animazione
     modal.addEventListener('transitionend', () => {
@@ -318,21 +320,25 @@ function visualizzaDomanda(playerId, domanda) {
     // Box domanda centrato nello schermo (fuori dalla griglia)
     const domandaBox = document.createElement('div');
     domandaBox.style.position = 'fixed';
-    domandaBox.style.top = '25%';
-    domandaBox.style.left = '40%';
+    domandaBox.style.top = '50%';
+    domandaBox.style.left = '50%';
     domandaBox.style.transform = 'translate(-50%, -50%)';
-    domandaBox.style.background = 'rgba(245,245,245,0.92)';
+    domandaBox.style.background = 'rgba(245, 245, 245, 0.33)';
     domandaBox.style.borderRadius = '18px';
     domandaBox.style.boxShadow = 'none';
     domandaBox.style.padding = '32px 48px';
-    domandaBox.style.minWidth = '20%';
-    domandaBox.style.maxWidth = '45%';
-    domandaBox.style.minHeight = '300px';
+    domandaBox.style.minWidth = '10%';
+    domandaBox.style.maxWidth = '40%';
+    domandaBox.style.minHeight = '10%';
+    domandaBox.style.maxHeight = '70%';
+    domandaBox.style.fontSize = '350%';
     domandaBox.style.zIndex = '10001';
     domandaBox.style.display = 'flex';
     domandaBox.style.flexDirection = 'column';
     domandaBox.style.alignItems = 'center';
     domandaBox.style.justifyContent = 'center';
+    domandaBox.style.color = 'rgb(255, 255, 255)';
+    domandaBox.style.textShadow = 'rgba(0, 0, 0, 0.35) 0px 5px 0px';
 
     // Domanda con effetto typewriter
     const domandaEl = document.createElement('div');
@@ -340,7 +346,6 @@ function visualizzaDomanda(playerId, domanda) {
     domandaEl.style.fontWeight = 'bold';
     domandaEl.style.marginBottom = '12px';
     domandaEl.style.textAlign = 'center';
-    domandaEl.style.color = '#222';
     domandaBox.appendChild(domandaEl);
 
     // Funzione typewriter
@@ -366,7 +371,7 @@ function visualizzaDomanda(playerId, domanda) {
     rightCol.style.alignItems = 'flex-end';
     rightCol.style.height = '100%';
     rightCol.style.padding = '32px 5vw 32px 0';
-    rightCol.style.gap = '100px';
+    rightCol.style.gap = '10%';
 
     // Mescola le risposte
     let risposte = [
