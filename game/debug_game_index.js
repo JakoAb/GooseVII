@@ -328,10 +328,10 @@ function visualizzaDomanda(playerId, domanda) {
     domandaBox.style.boxShadow = 'none';
     domandaBox.style.padding = '32px 48px';
     domandaBox.style.minWidth = '10%';
-    domandaBox.style.maxWidth = '40%';
+    domandaBox.style.maxWidth = '20%';
     domandaBox.style.minHeight = '10%';
     domandaBox.style.maxHeight = '70%';
-    domandaBox.style.fontSize = '350%';
+    domandaBox.style.fontSize = '250%';
     domandaBox.style.zIndex = '10001';
     domandaBox.style.display = 'flex';
     domandaBox.style.flexDirection = 'column';
@@ -382,7 +382,7 @@ function visualizzaDomanda(playerId, domanda) {
     risposte = risposte.sort(() => Math.random() - 0.5);
 
     // Calcola altezza box risposte
-    const boxHeight = (Math.floor((0.75 * 60 * window.innerHeight / 100) / risposte.length)+60) + 'px';
+    const boxHeight = ((Math.floor((0.75 * 60 * window.innerHeight / 100) / risposte.length)+60)/10) + '%';
 
     // Funzione per mostrare i bottoni delle risposte uno alla volta con animazione
     function showRispostaBtn(idx) {
@@ -405,7 +405,7 @@ function visualizzaDomanda(playerId, domanda) {
         btn.style.cursor = 'pointer';
         btn.style.boxShadow = 'rgb(0, 131, 145) 0px 35px 0px 0px';
         btn.style.transition = 'background 0.18s, color 0.18s, transform 0.18s, box-shadow 0.18s';
-        btn.style.width = '550px';
+        btn.style.width = '35%';
         btn.style.textAlign = 'center';
         btn.style.textShadow = 'rgba(0, 0, 0, 0.35) 0px 5px 0px';
         btn.style.fontSize = '4em';

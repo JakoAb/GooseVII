@@ -210,17 +210,18 @@ function blurMain(isBlur) {
   }
 }
 
-function addDebugDot(mainContent, debugDots, x, y, cella) {
+// Funzione per aggiungere un punto di debug (cella) usando percentuali
+function addDebugDot(mainContent, debugDots, xPerc, yPerc, cella) {
   const dot = document.createElement("div");
   dot.className = "debug-dot";
-  // Calcola la percentuale rispetto alla dimensione del contenitore
+  // Calcola la posizione in pixel rispetto alla dimensione del contenitore
   const containerRect = mainContent.getBoundingClientRect();
-  const leftPercent = ((x - 12) / containerRect.width) * 100;
-  const topPercent = ((y - 12) / containerRect.height) * 100;
-  dot.style.left = leftPercent + "%";
-  dot.style.top = topPercent + "%";
-  dot.dataset.x = x;
-  dot.dataset.y = y;
+  const left = (xPerc / 100) * containerRect.width - 12;
+  const top = (yPerc / 100) * containerRect.height - 12;
+  dot.style.left = left + "px";
+  dot.style.top = top + "px";
+  dot.dataset.xPerc = xPerc;
+  dot.dataset.yPerc = yPerc;
   dot.dataset.cella = cella;
   dot.style.width = "24px";
   dot.style.height = "24px";
@@ -232,7 +233,7 @@ function addDebugDot(mainContent, debugDots, x, y, cella) {
   dot.style.color = "#222";
   dot.innerText = cella;
   pointContainer.appendChild(dot);
-  debugDots.push({ el: dot, x, y, cella });
+  debugDots.push({ el: dot, xPerc, yPerc, cella });
 }
 
 function removeAllDebugDots(debugDots) {
@@ -248,6 +249,7 @@ function removeDebugDot(debugDots, el) {
   }
 }
 
+// Importazione punti da JSON (celle.json)
 async function importPoints(mainContent, debugDots) {
   try {
     const response = await fetch("database/celle.json");
@@ -255,6 +257,7 @@ async function importPoints(mainContent, debugDots) {
     const points = await response.json();
     removeAllDebugDots(debugDots);
     points.forEach((p, i) => {
+      // p.x e p.y sono ora percentuali
       addDebugDot(mainContent, debugDots, p.x, p.y, p.cella ?? i + 1);
     });
     alert("Punti importati!");
@@ -445,6 +448,7 @@ function importPreloadedCells(cells) {
   cells.forEach((p, i) => {
     if (typeof p.x !== "number" || typeof p.y !== "number")
       throw new Error("Ogni punto deve avere x e y numerici.");
+    // p.x e p.y sono percentuali
     addDebugDot(mainContent, debugDots, p.x, p.y, p.cella ?? i + 1);
   });
 }
@@ -644,13 +648,13 @@ document.addEventListener("mouseup", function (e) {
   x = Math.max(draggedDot.offsetWidth / 2, Math.min(x, rect.width - draggedDot.offsetWidth / 2));
   y = Math.max(draggedDot.offsetHeight / 2, Math.min(y, rect.height - draggedDot.offsetHeight / 2));
   // Aggiorna dataset e array debugDots
-  draggedDot.dataset.x = Math.round(x);
-  draggedDot.dataset.y = Math.round(y);
+  draggedDot.dataset.xPerc = Math.round((x / rect.width) * 100);
+  draggedDot.dataset.yPerc = Math.round((y / rect.height) * 100);
   const cella = draggedDot.dataset.cella;
   const idx = debugDots.findIndex((d) => d.cella == cella);
   if (idx !== -1) {
-    debugDots[idx].x = Math.round(x);
-    debugDots[idx].y = Math.round(y);
+    debugDots[idx].xPerc = Math.round((x / rect.width) * 100);
+    debugDots[idx].yPerc = Math.round((y / rect.height) * 100);
   }
   draggedDot = null;
   document.body.style.cursor = "";
@@ -721,8 +725,8 @@ if (importAllBtn) {
         imageLayersBase64 = [];
         // Popola celle e domande
         settings.celle.forEach((c, idx) => {
-          const pos = getPixelCoords(c.posizione.x, c.posizione.y);
-          addDebugDot(mainContent, debugDots, pos.x, pos.y, c.cella);
+          // c.posizione.x e c.posizione.y sono percentuali
+          addDebugDot(mainContent, debugDots, c.posizione.x, c.posizione.y, c.cella);
           // Salva la categoria della cella se presente
           if (c.categoria) debugDots[idx].categoria = c.categoria;
           if (Array.isArray(c.domande)) {
