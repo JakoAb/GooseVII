@@ -681,41 +681,6 @@ function getPixelCoords(xPerc, yPerc) {
   };
 }
 
-uploadImgBtn.addEventListener("click", function () {
-  imgUploadError.style.display = "none";
-  imgUploadError.textContent = "";
-  const files = Array.from(imgFileInput.files);
-  if (!files.length) {
-    imgUploadError.textContent = "Seleziona almeno un'immagine.";
-    imgUploadError.style.display = "block";
-    return;
-  }
-  // Carica tutte le immagini in ordine
-  const imageContainer = document.querySelector(".image-container");
-  let loaded = 0;
-  files.forEach((file, idx) => {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const url = e.target.result;
-      const div = document.createElement("div");
-      div.className = "bg-image";
-      div.style.backgroundImage = `url('${url}')`;
-      div.style.zIndex = 2 + idx; // z-index progressivo
-      imageContainer.appendChild(div);
-      loaded++;
-      if (loaded === files.length) {
-        imgUploadModal.style.display = "none";
-        imgFileInput.value = "";
-      }
-    };
-    reader.onerror = function () {
-      imgUploadError.textContent = `Errore caricamento immagine ${file.name}`;
-      imgUploadError.style.display = "block";
-    };
-    reader.readAsDataURL(file);
-  });
-});
-
 // Gestione importazione tutto
 const importAllBtn = document.getElementById("import-all-btn");
 if (importAllBtn) {
