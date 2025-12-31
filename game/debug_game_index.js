@@ -1,16 +1,7 @@
-//const stepGameStateBtn = document.getElementById("step-game-state-btn");
+
 var stepAnimationInProgress = false;
 var lastDiceRoll = 0;
 var lastBonusSteps = 0;
-
-//stepGameStateBtn.addEventListener("click", () => {
-//    if(currentGameTurn == 0){
-//        startGame();
-//    }else{
-//        newStep();
-//    }
-//
-//});
 
 function newStep(){
     updateStepIndicator();
@@ -593,7 +584,6 @@ function resolveEndTurn(playerId){
 
     if(isLastCell(getPlayerPosition(playerId))){
         resolveEndGame(playerId);
-        rainPartyEmojis();
     }else{
         // Dopo 0.5s passa automaticamente al prossimo step (nuovo turno)
         setTimeout(() => {
@@ -604,8 +594,17 @@ function resolveEndTurn(playerId){
 
 function resolveEndGame(playerId){
     console.log(getCurrentPlayerName()+" ha vinto la partita!");
-    const mainContent = document.getElementById('main-content');
-    if(mainContent) mainContent.classList.add('blurred-bg');
+    document.getElementById('victory-overlay').style.display = 'flex';
+    document.getElementById('victory-title').textContent = getCurrentPlayerName() + " ha vinto la partita!";
+    document.getElementById('victory-title').style.textShadow = '0 5px 0px '+getCurrentPlayerColor();
+    rainPartyEmojis();
+    megarain();
+}
+function megarain(){
+    setTimeout(() => {
+        rainPartyEmojis();
+        megarain();
+    }, INTENSITA_FESTEGGIAMENTI_FINALI);
 }
 
 // Rimuovi il box dado separato dalla pagina HTML

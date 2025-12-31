@@ -381,7 +381,7 @@ body, button, input, select, textarea, .turno-giocatore-box, #step-indicator, #d
   font-weight: bold;
   margin-bottom: 32px;
   text-align: center;
-  text-shadow: 0 2px 8px #000;
+  text-shadow: 0 5px 8px #000;
 }
 .victory-newgame-btn {
   margin-top: 32px;
