@@ -9,10 +9,12 @@ function setBoardState(celle) {
         x: cellaObj.posizione.x,
         y: cellaObj.posizione.y,
         domande: cellaObj.domande || [],
-        categoria: cellaObj.categoria || ''
+        categoria: cellaObj.categoria || '',
+        lastCell: false
       });
     }
   });
+  boardState.get(boardState.size-1).lastCell = true;
 }
 
 function setPlayerPosition(playerId, cellNumber) {
@@ -46,4 +48,13 @@ function getCategoriaByCella(cellNumber) {
     console.warn(`Cella ${cellNumber} non trovata in boardState.`);
     return '';
   }
+}
+
+function isLastCell(cellNumber) {
+    if (typeof boardState !== 'undefined' && boardState.has(cellNumber)) {
+        return boardState.get(cellNumber).lastCell || false;
+    } else {
+        console.warn(`Cella ${cellNumber} non trovata in boardState.`);
+        return false;
+    }
 }

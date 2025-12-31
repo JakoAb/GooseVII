@@ -344,3 +344,59 @@ body {
 body, button, input, select, textarea, .turno-giocatore-box, #step-indicator, #debug-bar, #dice-result-value, .domanda-modal, .domanda-box, .domanda-personaggio-img, .dice-result-box {
     font-family: 'Sigmar One', cursive, sans-serif !important;
 }
+.victory-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.victory-blur {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(10px) brightness(0.7);
+  background: rgba(40,33,47,0.7);
+  z-index: 1;
+}
+.victory-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 350px;
+  min-height: 220px;
+  background: rgba(255,255,255,0.13);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  padding: 40px 32px 32px 32px;
+}
+.victory-title {
+  color: #fff;
+  font-size: 2.2em;
+  font-weight: bold;
+  margin-bottom: 32px;
+  text-align: center;
+  text-shadow: 0 2px 8px #000;
+}
+.victory-newgame-btn {
+  margin-top: 32px;
+  font-size: 1.3em;
+  padding: 12px 32px;
+  border-radius: 12px;
+  border: none;
+  background: #fff;
+  color: #222;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: background 0.2s;
+}
+.victory-newgame-btn:hover {
+  background: #fbc02d;
+  color: #222;
+}

@@ -590,12 +590,23 @@ function resolveBonusStep(playerId){
 
 function resolveEndTurn(playerId){
     console.log(getCurrentPlayerName()+" termina il turno.");
-    // Dopo 0.5s passa automaticamente al prossimo step (nuovo turno)
-    setTimeout(() => {
-        newStep();
-    }, ATTESA_POST_END_TURN);
+
+    if(isLastCell(getPlayerPosition(playerId))){
+        resolveEndGame(playerId);
+        rainPartyEmojis();
+    }else{
+        // Dopo 0.5s passa automaticamente al prossimo step (nuovo turno)
+        setTimeout(() => {
+            newStep();
+        }, ATTESA_POST_END_TURN);
+    }
 }
 
+function resolveEndGame(playerId){
+    console.log(getCurrentPlayerName()+" ha vinto la partita!");
+    const mainContent = document.getElementById('main-content');
+    if(mainContent) mainContent.classList.add('blurred-bg');
+}
 
 // Rimuovi il box dado separato dalla pagina HTML
 const diceResultBox = document.getElementById('dice-result-box');
