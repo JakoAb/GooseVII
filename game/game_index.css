@@ -344,7 +344,7 @@ body {
 body, button, input, select, textarea, .turno-giocatore-box, #step-indicator, #debug-bar, #dice-result-value, .domanda-modal, .domanda-box, .domanda-personaggio-img, .dice-result-box {
     font-family: 'Sigmar One', cursive, sans-serif !important;
 }
-.victory-overlay {
+.victory-overlay, .err-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw;
@@ -361,7 +361,7 @@ body, button, input, select, textarea, .turno-giocatore-box, #step-indicator, #d
   background: rgba(40,33,47,0.7);
   z-index: 1;
 }
-.victory-content {
+.victory-content, .err-content {
   position: relative;
   z-index: 2;
   display: flex;
@@ -375,9 +375,22 @@ body, button, input, select, textarea, .turno-giocatore-box, #step-indicator, #d
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   padding: 40px 32px 32px 32px;
 }
-.victory-title {
+.err-content {
+  background: rgba(255, 117, 117, 0.13);
+  border: solid 1px red;
+}
+
+.victory-title, .err-title {
   color: #fff;
   font-size: 2.2em;
+  font-weight: bold;
+  margin-bottom: 32px;
+  text-align: center;
+  text-shadow: 0 5px 8px #000;
+}
+.victory-description, .err-description {
+  color: #fff;
+  font-size: 1.2em;
   font-weight: bold;
   margin-bottom: 32px;
   text-align: center;

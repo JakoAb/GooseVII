@@ -138,12 +138,23 @@ window.addEventListener("DOMContentLoaded", function () {
       }, 1000);
     });
 
-    if(settings == undefined) {console.error("Settings not found!"); return;}
-    loadSettings(settings);
-
     document.querySelector('#debug-bar').style.display = showDebug ? 'block' : 'none';
     document.querySelector('#step-indicator').style.display = showSteps ? 'block' : 'none';
+
+    try {
+        if(settings==undefined){console.log('settings undefined');}
+        loadSettings(settings);
+    } catch (e) {
+        showError("Nessuno scenario trovato!","inserisci il file content.js nella cartella game/content, poi ricarica la pagina");
+        document.querySelector('#start-game-overlay').style.display = 'none';
+    }
 });
+
+function showError(title, message) {
+    document.querySelector('#err-overlay').style.display = 'flex';
+    document.querySelector('#err-title').innerText = title;
+    document.querySelector('#err-description').innerText = message;
+}
 
 function loadSettings(settings) {
   const imageContainer = document.querySelector('.image-container');
