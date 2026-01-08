@@ -198,7 +198,7 @@ function resolveCheckCell(playerId){
         //cerca domande nella categoria della cella
         domandaEstratta = getDomandaFromPoolByCategoria(categoriaCella);
         domandaEstratta.categoria = categoriaCella;
-    }else{
+    }else if(settings.configurazioni.tipoDomande === 'cella'){
         var domande = getDomandeByCella(cellNumber);
         if(domande.length > 0){
             domandaEstratta = domande[Math.floor(Math.random() * domande.length)];

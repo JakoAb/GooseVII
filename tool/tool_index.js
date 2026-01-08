@@ -1,4 +1,4 @@
-let categorieDomanda = [ 'A', 'B', 'C', 'D' ];
+let categorieDomanda = [ 'A', 'B', 'C', 'D',''];
 let lastCategoria = 'A';
 let scale = 1;
 let minScale = 1;
@@ -365,7 +365,7 @@ loadJsonPointsBtn.addEventListener("click", function () {
       points.forEach((p, i) => {
         if (typeof p.x !== "number" || typeof p.y !== "number")
           throw new Error("Ogni punto deve avere x e y numerici.");
-        const px = getPixelCoords(p.x, p.y);
+        const px = getPercentCoords(p.x, p.y);
         addDebugDot(mainContent, debugDots, px.x, px.y, p.cella ?? i + 1);
       });
       importModal.style.display = "none";
@@ -477,7 +477,7 @@ function openCellQuestionsModal(cella) {
     categorieDomanda.forEach(cat => {
       const opt = document.createElement('option');
       opt.value = cat;
-      opt.textContent = cat;
+      opt.textContent = cat != '' ? cat : 'nessuna';
       select.appendChild(opt);
     });
     // Valore attuale
