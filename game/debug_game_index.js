@@ -312,17 +312,17 @@ function visualizzaDomanda(playerId, domanda) {
     const domandaBox = document.createElement('div');
     domandaBox.style.position = 'fixed';
     domandaBox.style.top = '50%';
-    domandaBox.style.left = '50%';
+    domandaBox.style.left = '40%';
     domandaBox.style.transform = 'translate(-50%, -50%)';
     domandaBox.style.background = 'rgba(245, 245, 245, 0.33)';
     domandaBox.style.borderRadius = '18px';
     domandaBox.style.boxShadow = 'none';
     domandaBox.style.padding = '32px 48px';
     domandaBox.style.minWidth = '10%';
-    domandaBox.style.maxWidth = '40%';
+    domandaBox.style.maxWidth = '35%';
     domandaBox.style.minHeight = '10%';
     domandaBox.style.maxHeight = '70%';
-    domandaBox.style.fontSize = '350%';
+    domandaBox.style.fontSize = calcolaFontSize(text);
     domandaBox.style.zIndex = '10001';
     domandaBox.style.display = 'flex';
     domandaBox.style.flexDirection = 'column';
@@ -333,11 +333,24 @@ function visualizzaDomanda(playerId, domanda) {
 
     // Domanda con effetto typewriter
     const domandaEl = document.createElement('div');
-    domandaEl.style.fontSize = '1.3em';
+    //domandaEl.style.fontSize = '1.3em';
     domandaEl.style.fontWeight = 'bold';
     domandaEl.style.marginBottom = '12px';
     domandaEl.style.textAlign = 'center';
     domandaBox.appendChild(domandaEl);
+
+    function getFontSize(text) {
+      const maxChars = 250;
+      const minFontSize = 100;   // a 250 caratteri
+      const maxFontSize = 350;   // a pochissimi caratteri
+
+      const length = Math.min(text.length, maxChars);
+
+      return (
+        maxFontSize -
+        (length / maxChars) * (maxFontSize - minFontSize)
+      );
+    }
 
     // Funzione typewriter
     function typeWriterEffect(element, text, speed, callback) {
@@ -399,9 +412,24 @@ function visualizzaDomanda(playerId, domanda) {
         btn.style.width = '550px';
         btn.style.textAlign = 'center';
         btn.style.textShadow = 'rgba(0, 0, 0, 0.35) 0px 5px 0px';
-        btn.style.fontSize = '4em';
+        btn.style.fontSize = calcolaFontSize(r.value);
         btn.style.opacity = '0';
         btn.style.transform = 'translateX(120px)';
+
+        function getFontSize(text) {
+          const maxChars = 250;
+          const minFontSize = 100;   // a 250 caratteri
+          const maxFontSize = 350;   // a pochissimi caratteri
+
+          const length = Math.min(text.length, maxChars);
+
+          return (
+            maxFontSize -
+            (length / maxChars) * (maxFontSize - minFontSize)
+          );
+        }
+
+
         // Effetto pressione su hover/click
         btn.onmouseover = () => {
             btn.style.background = 'rgb(35, 201, 209)';
