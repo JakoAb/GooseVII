@@ -322,7 +322,7 @@ function visualizzaDomanda(playerId, domanda) {
     domandaBox.style.maxWidth = '35%';
     domandaBox.style.minHeight = '10%';
     domandaBox.style.maxHeight = '70%';
-    domandaBox.style.fontSize = calcolaFontSize(text);
+    domandaBox.style.fontSize = calcolaFontSize(domanda.domanda);
     domandaBox.style.zIndex = '10001';
     domandaBox.style.display = 'flex';
     domandaBox.style.flexDirection = 'column';
@@ -339,7 +339,7 @@ function visualizzaDomanda(playerId, domanda) {
     domandaEl.style.textAlign = 'center';
     domandaBox.appendChild(domandaEl);
 
-    function getFontSize(text) {
+    function calcolaFontSize(text) {
       const maxChars = 250;
       const minFontSize = 100;   // a 250 caratteri
       const maxFontSize = 350;   // a pochissimi caratteri
@@ -349,7 +349,7 @@ function visualizzaDomanda(playerId, domanda) {
       return (
         maxFontSize -
         (length / maxChars) * (maxFontSize - minFontSize)
-      );
+      )+'%' ;
     }
 
     // Funzione typewriter
@@ -416,17 +416,17 @@ function visualizzaDomanda(playerId, domanda) {
         btn.style.opacity = '0';
         btn.style.transform = 'translateX(120px)';
 
-        function getFontSize(text) {
+        function calcolaFontSize(text) {
           const maxChars = 250;
           const minFontSize = 100;   // a 250 caratteri
-          const maxFontSize = 350;   // a pochissimi caratteri
+          const maxFontSize = 200;   // a pochissimi caratteri
 
           const length = Math.min(text.length, maxChars);
 
           return (
             maxFontSize -
             (length / maxChars) * (maxFontSize - minFontSize)
-          );
+          )+'%' ;
         }
 
 
